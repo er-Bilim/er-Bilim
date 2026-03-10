@@ -3,7 +3,7 @@
 ### Analytics ⚙️
 
 <a href="#">
-  <img src="https://github-readme-stats-one-bice.vercel.app/api?username=er-Bilim&role=OWNER,ORGANIZATION_MEMBER&show_icons=true&text_color=e38aff&title_color=080a44&icon_color=080a44&count_private=true" />
+  <img src="https://github-readme-stats-one-bice.vercel.app/api?username=er-Bilim&role=OWNER,ORGANIZATION_MEMBER&show_icons=true&text_color=0d1117&0d1117=080a44&icon_color=e38aff&bg_color=0d1117&count_private=true" />
 </a>
 
 ###
