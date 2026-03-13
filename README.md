@@ -12,9 +12,6 @@
 
 ###
 
-<details>
-  <summary>Stat Details</summary>
-  
 <!--START_SECTION:waka-->
 
 ```txt
@@ -31,4 +28,3 @@ JavaScript   1 hr 50 mins          ▒░░░░░░░░░░░░░░
 
 <!--END_SECTION:waka-->
 
-</details>
