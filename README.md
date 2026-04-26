@@ -3,7 +3,7 @@
 ### :four_leaf_clover: :four_leaf_clover: :four_leaf_clover: :four_leaf_clover:
 
 <a href="#">
-  <img src="https://github-readme-stats-one-bice.vercel.app/api?username=er-Bilim&role=OWNER,ORGANIZATION_MEMBER&show_icons=true&text_color=#ffffff&title_color=#ffffff&icon_color=#ffffff&bg_color=0d1117&count_private=true" />
+  <img src="https://github-readme-stats-one-bice.vercel.app/api?username=er-Bilim&role=OWNER,ORGANIZATION_MEMBER&show_icons=true&text_color=#ffffff&title_color=#ffffff&icon_color=#ffffff&bg_color=#0d1117&count_private=true" />
 </a>
 
 ###
@@ -15,15 +15,15 @@
 <!--START_SECTION:waka-->
 
 ```txt
-From: 14 February 2026 - To: 16 March 2026
+From: 25 March 2026 - To: 24 April 2026
 
-Total Time: 114 hrs 44 mins
+Total Time: 175 hrs 36 mins
 
-TypeScript   92 hrs 1 min          ████████████████████░░░░░   79.80 %
-JSON         5 hrs 42 mins         █▒░░░░░░░░░░░░░░░░░░░░░░░   04.94 %
-CSS          4 hrs 41 mins         █░░░░░░░░░░░░░░░░░░░░░░░░   04.07 %
-Python       3 hrs 56 mins         █░░░░░░░░░░░░░░░░░░░░░░░░   03.42 %
-SQL          2 hrs 50 mins         ▓░░░░░░░░░░░░░░░░░░░░░░░░   02.47 %
+TypeScript   155 hrs 37 mins       ██████████████████████░░░   88.45 %
+CSS          12 hrs 1 min          █▓░░░░░░░░░░░░░░░░░░░░░░░   06.84 %
+JSON         3 hrs 3 mins          ▒░░░░░░░░░░░░░░░░░░░░░░░░   01.74 %
+Markdown     1 hr 29 mins          ▒░░░░░░░░░░░░░░░░░░░░░░░░   00.85 %
+TSConfig     50 mins               ░░░░░░░░░░░░░░░░░░░░░░░░░   00.48 %
 ```
 
 <!--END_SECTION:waka-->
