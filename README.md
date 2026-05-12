@@ -2,8 +2,6 @@
 
 ### :four_leaf_clover: :four_leaf_clover: :four_leaf_clover: :four_leaf_clover:
 
-[![GitHub Streak](https://streak-stats.demolab.com?user=er-Bilim&theme=onedark-duo&hide_border=true&border_radius=2.5)](https://git.io/streak-stats)
-
 <a href="#">
   <img src="https://github-readme-stats-one-bice.vercel.app/api?username=er-Bilim&role=OWNER,ORGANIZATION_MEMBER&show_icons=true&text_color=ffffff&title_color=ffffff&icon_color=ffffff&bg_color=0d1117&count_private=true" />
 </a>
