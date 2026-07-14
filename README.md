@@ -6,9 +6,6 @@
   <a href="#">
     <img height="195" src="https://github-readme-stats-one-bice.vercel.app/api?username=er-Bilim&role=OWNER,ORGANIZATION_MEMBER&show_icons=true&text_color=ffffff&title_color=ffffff&icon_color=ffffff&bg_color=0d1117&count_private=true&include_all_commits=true&hide_border=true" />
   </a>
-  <a href="#">
-    <img height="195" src="https://github-readme-stats-one-bice.vercel.app/api/top-langs/?username=er-Bilim&role=OWNER,ORGANIZATION_MEMBER&layout=compact&langs_count=8&text_color=ffffff&title_color=ffffff&bg_color=0d1117&hide_border=true" />
-  </a>
 </p>
 
 ###
