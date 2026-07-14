@@ -5,7 +5,6 @@
 <div align="center">
 
 <img height="180" src="https://github-readme-stats-one-bice.vercel.app/api?username=er-Bilim&role=OWNER,ORGANIZATION_MEMBER&show_icons=true&count_private=true&include_all_commits=true&bg_color=0d1117&border_color=21262d&title_color=7ea88a&icon_color=5f8a6d&text_color=c9d1d9&ring_color=7ea88a" />
-<img height="180" src="https://github-readme-stats.vercel.app/api/wakatime?username=taose&layout=compact&langs_count=5&bg_color=0d1117&border_color=21262d&title_color=7ea88a&text_color=c9d1d9" />
 
 </div>
 
