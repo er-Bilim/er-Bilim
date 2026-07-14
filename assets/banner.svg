@@ -30,6 +30,6 @@
     <path d="M26 27 L27.5 41" stroke="#3f5c4a" stroke-width="1.6" stroke-linecap="round" fill="none"/>
   </g>
 
-  <text x="447" y="126" text-anchor="middle" fill="#c9d1d9" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="34" font-weight="500" letter-spacing="6">er-Bilim</text>
+  <text x="447" y="126" text-anchor="middle" fill="#c9d1d9" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="34" font-weight="500" letter-spacing="6">Bilim</text>
   <line x1="415" y1="147" x2="485" y2="147" stroke="#7ea88a" stroke-width="1" opacity="0.55"/>
 </svg>
