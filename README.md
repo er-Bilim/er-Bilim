@@ -1,18 +1,19 @@
-### er-Bilim
+<div align="center">
 
-### :four_leaf_clover: :four_leaf_clover: :four_leaf_clover: :four_leaf_clover:
+# er-Bilim
 
-<p>
-  <a href="#">
-    <img height="195" src="https://github-readme-stats-one-bice.vercel.app/api?username=er-Bilim&role=OWNER,ORGANIZATION_MEMBER&show_icons=true&text_color=ffffff&title_color=ffffff&icon_color=ffffff&bg_color=0d1117&count_private=true&include_all_commits=true&hide_border=true" />
-  </a>
-</p>
+:four_leaf_clover: :four_leaf_clover: :four_leaf_clover: :four_leaf_clover:git 
 
-###
+<img height="180" src="https://github-readme-stats-one-bice.vercel.app/api?username=er-Bilim&role=OWNER,ORGANIZATION_MEMBER&show_icons=true&count_private=true&include_all_commits=true&bg_color=0d1117&border_color=21262d&title_color=7ea88a&icon_color=5f8a6d&text_color=c9d1d9&ring_color=7ea88a" />
+<img height="180" src="https://github-readme-stats-one-bice.vercel.app/api/top-langs/?username=er-Bilim&layout=compact&langs_count=6&bg_color=0d1117&border_color=21262d&title_color=7ea88a&text_color=c9d1d9" />
+
+</div>
+
+---
 
 [![wakatime](https://wakatime.com/badge/user/4cb5727d-c163-4c42-866c-a48cd6d37d56.svg)](https://wakatime.com/@4cb5727d-c163-4c42-866c-a48cd6d37d56)
 
-###
+---
 
 <!--START_SECTION:waka-->
 
