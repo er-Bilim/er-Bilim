@@ -4,7 +4,7 @@
 
 ---
 
-[![wakatime](https://wakatime.com/badge/user/4cb5727d-c163-4c42-866c-a48cd6d37d56.svg)](https://wakatime.com/@4cb5727d-c163-4c42-866c-a48cd6d37d56)
+<img height="180" src="https://github-readme-stats-one-bice.vercel.app/api/wakatime?username=taose&layout=compact&langs_count=5&bg_color=0d1117&border_color=21262d&title_color=7ea88a&text_color=c9d1d9&custom_title=WakaTime" />
 
 ---
 
