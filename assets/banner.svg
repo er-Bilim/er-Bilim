@@ -1,44 +1,35 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 180" width="900" height="180" role="img" aria-label="er-Bilim">
-  <title>Bilim</title>
-
-  <defs>
-    <g id="clover-mono">
-      <g transform="translate(-26,-26)">
-        <path d="M26 26 C26 18, 18 16, 16 20 C14 24, 20 26, 26 26 Z"/>
-        <path d="M26 26 C26 18, 34 16, 36 20 C38 24, 32 26, 26 26 Z"/>
-        <path d="M26 26 C26 34, 18 36, 16 32 C14 28, 20 26, 26 26 Z"/>
-        <path d="M26 26 C26 34, 34 36, 36 32 C38 28, 32 26, 26 26 Z"/>
-        <path d="M26 27 L27.5 41" stroke-width="1.6" stroke-linecap="round" fill="none"/>
-      </g>
-    </g>
-    <g id="clover">
-      <g transform="translate(-26,-26)">
-        <path d="M26 26 C26 18, 18 16, 16 20 C14 24, 20 26, 26 26 Z" fill="#7ea88a"/>
-        <path d="M26 26 C26 18, 34 16, 36 20 C38 24, 32 26, 26 26 Z" fill="#5f8a6d"/>
-        <path d="M26 26 C26 34, 18 36, 16 32 C14 28, 20 26, 26 26 Z" fill="#5f8a6d"/>
-        <path d="M26 26 C26 34, 34 36, 36 32 C38 28, 32 26, 26 26 Z" fill="#7ea88a"/>
-        <path d="M26 27 L27.5 41" stroke="#3f5c4a" stroke-width="1.6" stroke-linecap="round" fill="none"/>
-      </g>
-    </g>
-  </defs>
-
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 180" width="900" height="180">
   <rect x="0.5" y="0.5" width="899" height="179" rx="12" fill="#0d1117" stroke="#21262d"/>
 
-  <g fill="#7ea88a" stroke="#7ea88a" opacity="0.05">
-    <use href="#clover-mono" transform="translate(96,92) scale(2.9)"/>
-    <use href="#clover-mono" transform="translate(804,92) scale(2.9)"/>
-    <use href="#clover-mono" transform="translate(210,44) scale(1.3)"/>
-    <use href="#clover-mono" transform="translate(690,138) scale(1.3)"/>
+  <g transform="translate(364,38) scale(0.78)">
+    <path d="M26 26 C26 18, 18 16, 16 20 C14 24, 20 26, 26 26 Z" fill="#7ea88a"/>
+    <path d="M26 26 C26 18, 34 16, 36 20 C38 24, 32 26, 26 26 Z" fill="#5f8a6d"/>
+    <path d="M26 26 C26 34, 18 36, 16 32 C14 28, 20 26, 26 26 Z" fill="#5f8a6d"/>
+    <path d="M26 26 C26 34, 34 36, 36 32 C38 28, 32 26, 26 26 Z" fill="#7ea88a"/>
+    <path d="M26 27 L27.5 41" stroke="#3f5c4a" stroke-width="1.6" stroke-linecap="round" fill="none"/>
   </g>
-
-  <g>
-    <use href="#clover" transform="translate(384,58) scale(0.78)"/>
-    <use href="#clover" transform="translate(428,58) scale(0.78)"/>
-    <use href="#clover" transform="translate(472,58) scale(0.78)"/>
-    <use href="#clover" transform="translate(516,58) scale(0.78)"/>
+  <g transform="translate(408,38) scale(0.78)">
+    <path d="M26 26 C26 18, 18 16, 16 20 C14 24, 20 26, 26 26 Z" fill="#7ea88a"/>
+    <path d="M26 26 C26 18, 34 16, 36 20 C38 24, 32 26, 26 26 Z" fill="#5f8a6d"/>
+    <path d="M26 26 C26 34, 18 36, 16 32 C14 28, 20 26, 26 26 Z" fill="#5f8a6d"/>
+    <path d="M26 26 C26 34, 34 36, 36 32 C38 28, 32 26, 26 26 Z" fill="#7ea88a"/>
+    <path d="M26 27 L27.5 41" stroke="#3f5c4a" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+  </g>
+  <g transform="translate(452,38) scale(0.78)">
+    <path d="M26 26 C26 18, 18 16, 16 20 C14 24, 20 26, 26 26 Z" fill="#7ea88a"/>
+    <path d="M26 26 C26 18, 34 16, 36 20 C38 24, 32 26, 26 26 Z" fill="#5f8a6d"/>
+    <path d="M26 26 C26 34, 18 36, 16 32 C14 28, 20 26, 26 26 Z" fill="#5f8a6d"/>
+    <path d="M26 26 C26 34, 34 36, 36 32 C38 28, 32 26, 26 26 Z" fill="#7ea88a"/>
+    <path d="M26 27 L27.5 41" stroke="#3f5c4a" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+  </g>
+  <g transform="translate(496,38) scale(0.78)">
+    <path d="M26 26 C26 18, 18 16, 16 20 C14 24, 20 26, 26 26 Z" fill="#7ea88a"/>
+    <path d="M26 26 C26 18, 34 16, 36 20 C38 24, 32 26, 26 26 Z" fill="#5f8a6d"/>
+    <path d="M26 26 C26 34, 18 36, 16 32 C14 28, 20 26, 26 26 Z" fill="#5f8a6d"/>
+    <path d="M26 26 C26 34, 34 36, 36 32 C38 28, 32 26, 26 26 Z" fill="#7ea88a"/>
+    <path d="M26 27 L27.5 41" stroke="#3f5c4a" stroke-width="1.6" stroke-linecap="round" fill="none"/>
   </g>
 
   <text x="447" y="126" text-anchor="middle" fill="#c9d1d9" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="34" font-weight="500" letter-spacing="6">er-Bilim</text>
-
   <line x1="415" y1="147" x2="485" y2="147" stroke="#7ea88a" stroke-width="1" opacity="0.55"/>
 </svg>
