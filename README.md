@@ -2,7 +2,7 @@
   <img src="./assets/banner.svg" alt="er-Bilim" width="100%" />
 </div>
 
-<table align="center">
+<table align="center" style="border:none">
   <tr>
     <td>
       <a href="https://github.com/er-Bilim">
@@ -17,11 +17,11 @@
   </tr>
 </table>
 
----
+<div align="center">
 
 [![wakatime](https://wakatime.com/badge/user/4cb5727d-c163-4c42-866c-a48cd6d37d56.svg)](https://wakatime.com/@4cb5727d-c163-4c42-866c-a48cd6d37d56)
 
----
+</div>
 
 <!--START_SECTION:waka-->
 
