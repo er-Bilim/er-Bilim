@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./assets/banner.svg" alt="er-Bilim" width="100%" />
+  <img src="https://raw.githubusercontent.com/er-Bilim/er-Bilim/main/assets/banner.svg" alt="er-Bilim" width="100%" />
 </div>
 
 <table align="center" style="border:none">
