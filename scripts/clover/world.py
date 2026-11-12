@@ -612,6 +612,52 @@ def sky_layer(st, W, H, rnd):
     return "".join(back), "".join(fore)
 
 
+PIXEL = {  # 5x7 block letters
+    "B": ["####.", "#...#", "#...#", "####.", "#...#", "#...#", "####."],
+    "I": ["###", ".#.", ".#.", ".#.", ".#.", ".#.", "###"],
+    "L": ["#....", "#....", "#....", "#....", "#....", "#....", "#####"],
+    "M": ["#...#", "##.##", "#.#.#", "#.#.#", "#...#", "#...#", "#...#"],
+}
+
+
+def block_name(word, x0, y0, s, st, mode="oblique"):
+    """The name built from cubes. oblique: letters stay horizontal (front faces square), depth goes up-right."""
+    p = SEASONS[st["season"]]
+    night = st["phase"] == "night"
+    body = ("#efe6da", "#d6c9b8", "#bfae9b") if night else ("#4a4270", "#2b2540", "#3b3358")
+    cells = []
+    col = 0
+    for ch in word:
+        g = PIXEL[ch]
+        for r, row in enumerate(g):
+            for c, v in enumerate(row):
+                if v == "#":
+                    cells.append((col + c, 6 - r))
+        col += len(g[0]) + 1
+    occ = set(cells)
+    d = s * .5  # depth offset (up-right)
+    back, fronts = [], []
+    # extrusions (top + right faces) first, front faces last: the front plane always covers the depth
+    for (c, r) in sorted(cells, key=lambda t: (-t[0], t[1])):
+        x, y = x0 + c * s, y0 - (r + 1) * s
+        if (c, r + 1) not in occ:
+            back.append(f'<path d="M{x:.1f} {y:.1f} l{d:.1f} {-d:.1f} h{s} l{-d:.1f} {d:.1f}Z" fill="{p["top"]}"/>')
+        if (c + 1, r) not in occ:
+            back.append(f'<path d="M{x + s:.1f} {y:.1f} l{d:.1f} {-d:.1f} v{s} l{-d:.1f} {d:.1f}Z" fill="{body[1]}"/>')
+        fronts.append(f'<rect x="{x:.1f}" y="{y:.1f}" width="{s}" height="{s}" fill="{body[0]}"/>'
+                      f'<rect x="{x + .5:.1f}" y="{y + .5:.1f}" width="{s - 1}" height="{s - 1}" fill="none" stroke="{body[2]}" stroke-width="1" opacity=".5"/>')
+    out = back + fronts
+    # grass tufts / snow on some top faces
+    rnd = random.Random(7)
+    for (c, r) in cells:
+        if (c, r + 1) not in occ and rnd.random() < .35:
+            x, y = x0 + c * s + s * .4, y0 - (r + 1) * s - d * .4
+            if st["season"] == "winter":
+                continue
+            out.append("".join(f'<path d="M{x + k:.1f} {y:.1f} q{k * .3:.1f} -4 {k * .7:.1f} -7" stroke="{shade(p["leaf"], .8)}" stroke-width="1.4" fill="none" stroke-linecap="round"/>' for k in (-2.5, 0, 2.5)))
+    return "".join(out), col * s - s
+
+
 def chip(x, y, label, dark=False):
     t, w = text(label, x + 14, y + 25, 20, "#f3eee6" if dark else INK, kind="monoB")
     bg = "#ffffff" if not dark else "#2b2540"
@@ -634,7 +680,8 @@ def header(st):
     b.append(fore)
     ink = "#f3eee6" if night else INK
     sub = "#c9c4dc" if night else shade(INK, 1.9)
-    t, _ = text("Bilim", 64, 150, 108, ink, kind="title"); b.append(t)
+    nm, _ = block_name("BILIM", 66, 156, 16, st)
+    b.append(nm)
     t, _ = text("fullstack developer", 70, 198, 24, ink, kind="mono"); b.append(t)
     t, _ = text("builds small worlds, one block at a time", 70, 236, 20, sub, kind="mono"); b.append(t)
     weather_word = {"sunny": "sunny", "clear": "clear", "cloudy": "cloudy", "rain": "snowing" if st["season"] == "winter" else "raining"}[st["weather"]]
@@ -766,3 +813,31 @@ def divider():
     iso.add(0, 0, 0, "#a9d8a0")
     return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}">'
             f'<path d="M150 18 H560 M640 18 H1050" stroke="#6b6680" stroke-width="1.4" stroke-dasharray="2 8" stroke-linecap="round"/>{iso.render()}</svg>')
+
+
+# ---------------------------------------------------------------- link buttons (one svg per link, so each can be a link)
+ICONS = {
+    # generic glyphs, not brand logos: paper plane, briefcase, camera
+    "telegram": '<path d="M2 11 L20 3 L15 20 L10 14 Z" fill="none" stroke="{c}" stroke-width="2" stroke-linejoin="round"/><path d="M10 14 L20 3" stroke="{c}" stroke-width="2"/>',
+    "linkedin": '<rect x="2" y="7" width="18" height="12" rx="2" fill="none" stroke="{c}" stroke-width="2"/><path d="M8 7 V4 H14 V7 M2 12 H20" fill="none" stroke="{c}" stroke-width="2"/>',
+    "instagram": '<rect x="2" y="3" width="18" height="17" rx="5" fill="none" stroke="{c}" stroke-width="2"/><circle cx="11" cy="11.5" r="4" fill="none" stroke="{c}" stroke-width="2"/><circle cx="16" cy="7" r="1.3" fill="{c}"/>',
+}
+
+
+def link_button(kind, handle, st):
+    """A raised block with the handle on its face; depth goes up-right like the block name."""
+    p = SEASONS[st["season"]]
+    _, tw = text(handle, 0, 0, 20, "#000", kind="monoB")
+    H, d = 72, 10
+    w = round(52 + tw + 20)
+    W = w + d + 10
+    x, y, h = 4, d + 4, H - d - 10
+    face, side, edge = "#f6efe6", "#4a4270", "#2b2540"
+    out = [f'<path d="M{x} {y} l{d} {-d} h{w} l{-d} {d}Z" fill="{p["top"]}"/>',
+           f'<path d="M{x + w} {y} l{d} {-d} v{h} l{-d} {d}Z" fill="{side}"/>',
+           f'<rect x="{x}" y="{y}" width="{w}" height="{h}" fill="{face}" stroke="{edge}" stroke-width="2"/>']
+    out.append(f'<g transform="translate({x + 16} {y + h / 2 - 11})">{ICONS[kind].format(c=edge)}</g>')
+    t, tw = text(handle, x + 52, y + h / 2 + 7, 20, edge, kind="monoB")
+    out.append(t)
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" role="img" aria-label="{kind}: {handle}">'
+            f'<title>{kind}: {handle}</title>{"".join(out)}</svg>')

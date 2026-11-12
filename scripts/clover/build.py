@@ -27,6 +27,7 @@ LOGIN = "er-Bilim"
 LUCK_START = dt.date(2026, 11, 13)
 LUCK_ODDS = 10
 BISHKEK = dt.timezone(dt.timedelta(hours=6))
+LINKS = [("telegram", "erk_bilim"), ("linkedin", "bilim-erkinbekov"), ("instagram", "esoatna")]
 
 
 def _get(url, headers, body=None):
@@ -154,6 +155,8 @@ def main():
         "footer.svg": world.garden_footer(st),
         "divider.svg": world.divider(),
     }
+    for kind, handle in LINKS:
+        out[f"link-{kind}.svg"] = world.link_button(kind, handle, st)
     os.makedirs(a.out, exist_ok=True)
     for name, svg in out.items():
         with open(os.path.join(a.out, name), "w", encoding="utf-8", newline="\n") as f:
