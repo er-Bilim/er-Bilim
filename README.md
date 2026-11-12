@@ -24,7 +24,7 @@ now:
 <p align="center">
   <a href="https://t.me/erk_bilim"><img src="./assets/link-telegram.svg" height="46" alt="telegram: erk_bilim" /></a>
   <a href="https://www.linkedin.com/in/bilim-erkinbekov"><img src="./assets/link-linkedin.svg" height="46" alt="linkedin: bilim-erkinbekov" /></a>
-  <a href="https://instagram.com/esoatna"><img src="./assets/link-instagram.svg" height="46" alt="instagram: esoatna" /></a>
+  <a href="https://www.instagram.com/potatokepopo"><img src="./assets/link-instagram.svg" height="46" alt="instagram: esoatna" /></a>
 </p>
 
 <img src="./assets/footer.svg" width="100%" alt="clover garden" />
