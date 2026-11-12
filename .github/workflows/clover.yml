@@ -1,0 +1,45 @@
+name: Clover
+
+# Redraws the profile pictures once a day (Bishkek morning):
+# seasonal header meadow, daily four-leaf luck, stats card, languages clover.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 0 * * *"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/clover/**"
+      - ".github/workflows/clover.yml"
+
+concurrency:
+  group: clover
+  cancel-in-progress: false
+
+jobs:
+  draw:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Draw
+        env:
+          GH_TOKEN: ${{ secrets.STATS_PAT }}
+          WAKATIME_API_KEY: ${{ secrets.WAKATIME_API_KEY }}
+        run: python scripts/clover/build.py
+
+      - name: Commit if anything changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets scripts/clover/cache.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Clover: daily redraw"
+          git pull --rebase
+          git push
