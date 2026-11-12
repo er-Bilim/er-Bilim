@@ -81,13 +81,36 @@ def rank(s):
 
 
 def fetch_waka(key):
-    auth = base64.b64encode(key.encode()).decode()
-    data = _get("https://wakatime.com/api/v1/users/current/stats/last_30_days", {"Authorization": f"Basic {auth}"})["data"]
-    langs = [{"name": l["name"], "percent": l["percent"], "hours": round(l.get("total_seconds", 0) / 3600, 1)}
-             for l in data.get("languages", []) if l["name"] != "Other"]
-    if not langs:
-        raise ValueError("wakatime stats not ready yet")
-    return {"languages": langs, "total": data.get("human_readable_total", "")}
+    """Languages for the last 30 days (falls back to 7 days) + all-time total coding time."""
+    auth = {"Authorization": "Basic " + base64.b64encode(key.encode()).decode()}
+    out = {}
+    for rng in ("last_30_days", "last_7_days"):
+        data = _get(f"https://wakatime.com/api/v1/users/current/stats/{rng}", auth)["data"]
+        langs = [{"name": l["name"], "percent": l["percent"], "hours": round(l.get("total_seconds", 0) / 3600, 1)}
+                 for l in data.get("languages", []) if l["name"] != "Other"]
+        if langs:
+            out = {"languages": langs, "total": data.get("human_readable_total", ""), "range": rng}
+            break
+        print(f"[waka] {rng}: no languages yet (is_up_to_date={data.get('is_up_to_date')}, status={data.get('status')})")
+    try:
+        at = _get("https://wakatime.com/api/v1/users/current/all_time_since_today", auth)["data"]
+        out["all_time"] = at.get("text", "")
+    except Exception as e:
+        print(f"[waka] all-time: {e}")
+    if not out.get("languages"):
+        raise ValueError("wakatime returned no languages")
+    return out
+
+
+def _explain(e):
+    """Show the HTTP status and body, so a failing secret/endpoint is visible in the Action log."""
+    body = ""
+    if hasattr(e, "read"):
+        try:
+            body = e.read().decode()[:200]
+        except Exception:
+            pass
+    return f"{e} {body}".strip()
 
 
 def lucky(day):
@@ -130,12 +153,16 @@ def main():
             try:
                 cache["stats"], cache["weekly"], cache["repo"] = fetch_github(os.environ["GH_TOKEN"])
             except Exception as e:  # keep yesterday's numbers instead of failing
-                print(f"[github] using cache: {e}")
+                print(f"[github] using cache: {_explain(e)}")
         if os.environ.get("WAKATIME_API_KEY"):
             try:
-                cache["waka"] = fetch_waka(os.environ["WAKATIME_API_KEY"])
+                fresh = fetch_waka(os.environ["WAKATIME_API_KEY"])
+                fresh.setdefault("all_time", cache.get("waka", {}).get("all_time", ""))
+                cache["waka"] = fresh
             except Exception as e:
-                print(f"[waka] using cache: {e}")
+                print(f"[waka] using cache: {_explain(e)}")
+        else:
+            print("[waka] WAKATIME_API_KEY is not set, using cache")
         json.dump(cache, open(CACHE, "w"), indent=2)
 
     now = dt.datetime.now(BISHKEK)

@@ -204,7 +204,7 @@ def make_state(today, phase, season, stats, waka, weekly, latest_repo, lucky_tod
     if rest:
         langs.append(("Other", sum(l["percent"] for l in rest), sum(l.get("hours", 0) for l in rest)))
     return dict(today=today, phase=phase, season=season, stats=stats, weekly=weekly, weather=weather, holiday=holiday,
-                rare=rare, unlocked=unlocked, next=nxt, langs=langs, total=waka.get("total", ""), repo=latest_repo,
+                rare=rare, unlocked=unlocked, next=nxt, langs=langs, total=waka.get("total", ""), all_time=waka.get("all_time", ""), repo=latest_repo,
                 lucky=lucky_today, found=found, level=commits // 100)
 
 
@@ -663,6 +663,16 @@ def block_name(word, x0, y0, s, st, mode="oblique"):
     return "".join(out), col * s - s
 
 
+def short_time(t):
+    """'1,234 hrs 56 mins' -> '1,234 h'; '54 hrs 35 mins' -> '54h 35m'."""
+    import re
+    h = re.search(r"([\d,]+)\s*hr", t)
+    m = re.search(r"(\d+)\s*min", t)
+    if h and int(h.group(1).replace(",", "")) >= 100:
+        return f"{h.group(1)} h"
+    return " ".join(x for x in [f"{h.group(1)}h" if h else "", f"{m.group(1)}m" if m else ""] if x) or t
+
+
 def chip(x, y, label, dark=False):
     t, w = text(label, x + 14, y + 25, 20, "#f3eee6" if dark else INK, kind="monoB")
     bg = "#ffffff" if not dark else "#2b2540"
@@ -694,6 +704,8 @@ def header(st):
     rows = [f"{weather_word} · {st['weekly']} commits this week"]
     if st["repo"]:
         rows.append(f"now building: {st['repo']}")
+    if st.get("all_time"):
+        rows.append(f"{short_time(st['all_time'])} of coding, all time")
     if st["holiday"]:
         rows.append({"new year": "happy new year", "nooruz": "nooruz mairamy", "halloween": "spooky week"}[st["holiday"]])
     y = 270
@@ -751,8 +763,11 @@ def districts_card(st):
     p = SEASONS[st["season"]]
     b = []
     t, _ = text("districts", 30, 56, 34, ink, kind="title"); b.append(t)
-    t, _ = text(st["total"], 570, 52, 20, ink, "end", "monoB"); b.append(t)
-    t, _ = text("languages, last 30 days", 30, 86, 20, sub, kind="mono"); b.append(t)
+    t, _ = text(short_time(st["total"]), 570, 52, 22, ink, "end", "monoB"); b.append(t)
+    sub_line = "languages, last 30 days"
+    if st.get("all_time"):
+        sub_line = f"last 30 days · all time {short_time(st['all_time'])}"
+    t, _ = text(sub_line, 30, 86, 20, sub, kind="mono"); b.append(t)
     icons = []
     # forest / lake / cliffs / meadow icons
     for i in range(4):
