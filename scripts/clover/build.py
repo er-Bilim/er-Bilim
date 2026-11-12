@@ -102,6 +102,21 @@ def fetch_waka(key):
     return out
 
 
+WAKA_BADGE = "https://wakatime.com/badge/user/4cb5727d-c163-4c42-866c-a48cd6d37d56.svg"
+
+
+def fetch_all_time_badge():
+    """The public WakaTime badge carries the all-time total, no API key needed."""
+    import re
+    req = urllib.request.Request(WAKA_BADGE, headers={"User-Agent": "clover-build"})
+    with urllib.request.urlopen(req, timeout=30) as r:
+        svg = r.read().decode()
+    m = re.search(r"([\d,]+ hrs?(?: \d+ mins?)?)", svg)
+    if not m:
+        raise ValueError("no time in badge")
+    return m.group(1)
+
+
 def _explain(e):
     """Show the HTTP status and body, so a failing secret/endpoint is visible in the Action log."""
     body = ""
@@ -163,6 +178,10 @@ def main():
                 print(f"[waka] using cache: {_explain(e)}")
         else:
             print("[waka] WAKATIME_API_KEY is not set, using cache")
+        try:  # all-time total from the public badge works even without the API key
+            cache["waka"]["all_time"] = fetch_all_time_badge()
+        except Exception as e:
+            print(f"[waka] badge: {_explain(e)}")
         json.dump(cache, open(CACHE, "w"), indent=2)
 
     now = dt.datetime.now(BISHKEK)
@@ -181,6 +200,7 @@ def main():
         "langs.svg": world.districts_card(st),
         "footer.svg": world.garden_footer(st),
         "divider.svg": world.divider(),
+        "time.svg": world.time_card(st),
     }
     for kind, handle in LINKS:
         out[f"link-{kind}.svg"] = world.link_button(kind, handle, st)

@@ -622,6 +622,19 @@ PIXEL = {  # 5x7 block letters
     "I": ["###", ".#.", ".#.", ".#.", ".#.", ".#.", "###"],
     "L": ["#....", "#....", "#....", "#....", "#....", "#....", "#####"],
     "M": ["#...#", "##.##", "#.#.#", "#.#.#", "#...#", "#...#", "#...#"],
+    "0": [".###.", "#...#", "#..##", "#.#.#", "##..#", "#...#", ".###."],
+    "1": ["..#..", ".##..", "..#..", "..#..", "..#..", "..#..", ".###."],
+    "2": [".###.", "#...#", "....#", "...#.", "..#..", ".#...", "#####"],
+    "3": ["####.", "....#", "....#", ".###.", "....#", "....#", "####."],
+    "4": ["...#.", "..##.", ".#.#.", "#..#.", "#####", "...#.", "...#."],
+    "5": ["#####", "#....", "####.", "....#", "....#", "#...#", ".###."],
+    "6": [".###.", "#....", "#....", "####.", "#...#", "#...#", ".###."],
+    "7": ["#####", "....#", "...#.", "..#..", ".#...", ".#...", ".#..."],
+    "8": [".###.", "#...#", "#...#", ".###.", "#...#", "#...#", ".###."],
+    "9": [".###.", "#...#", "#...#", ".####", "....#", "....#", ".###."],
+    ",": ["..", "..", "..", "..", "..", "#.", "#."],
+    "H": ["#...#", "#...#", "#...#", "#####", "#...#", "#...#", "#...#"],
+    " ": ["..", "..", "..", "..", "..", "..", ".."],
 }
 
 
@@ -704,8 +717,7 @@ def header(st):
     rows = [f"{weather_word} · {st['weekly']} commits this week"]
     if st["repo"]:
         rows.append(f"now building: {st['repo']}")
-    if st.get("all_time"):
-        rows.append(f"{short_time(st['all_time'])} of coding, all time")
+
     if st["holiday"]:
         rows.append({"new year": "happy new year", "nooruz": "nooruz mairamy", "halloween": "spooky week"}[st["holiday"]])
     y = 270
@@ -765,8 +777,6 @@ def districts_card(st):
     t, _ = text("districts", 30, 56, 34, ink, kind="title"); b.append(t)
     t, _ = text(short_time(st["total"]), 570, 52, 22, ink, "end", "monoB"); b.append(t)
     sub_line = "languages, last 30 days"
-    if st.get("all_time"):
-        sub_line = f"last 30 days · all time {short_time(st['all_time'])}"
     t, _ = text(sub_line, 30, 86, 20, sub, kind="mono"); b.append(t)
     icons = []
     # forest / lake / cliffs / meadow icons
@@ -862,3 +872,35 @@ def link_button(kind, handle, st):
     out.append(t)
     return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" role="img" aria-label="{kind}: {handle}">'
             f'<title>{kind}: {handle}</title>{"".join(out)}</svg>')
+
+
+def time_card(st):
+    """All-time coding total as a big number built from blocks, plus the last 30 days."""
+    import re
+    W, H = 1200, 220
+    night = st["phase"] == "night"
+    ink = "#f3eee6" if night else INK
+    sub = "#c9c4dc" if night else shade(INK, 1.9)
+    p = SEASONS[st["season"]]
+    b = []
+    m = re.search(r"([\d,]+)\s*hr", st.get("all_time", "") or "")
+    hours = m.group(1) if m else "0"
+    t, _ = text("time at the keyboard", 40, 54, 22, ink, kind="title"); b.append(t)
+    t, _ = text("all time, by WakaTime", 40, 84, 20, sub, kind="mono"); b.append(t)
+    num, nw = block_name(hours + " H", 44, 196, 11, st)
+    b.append(num)
+    # right side: last 30 days as a row of daily-ish blocks (one block = ~2 hours)
+    t30 = st.get("total", "")
+    hm = re.search(r"(\d+)\s*h", t30)
+    h30 = int(hm.group(1)) if hm else 0
+    t, _ = text("last 30 days", 1160, 54, 22, ink, "end", "title"); b.append(t)
+    t, _ = text(short_time(t30) if t30 else "-", 1160, 84, 20, sub, "end", "mono"); b.append(t)
+    iso = Iso(1010, 112, 11)
+    n = min(48, max(1, round(h30 / 2)))
+    for k in range(n):
+        x, y, z = k % 6, (k // 6) % 4, k // 24
+        iso.add(x, y, z, p["top"], p["side"][0], p["side"][1])
+    b.append(f'<g class="rise">{iso.render()}</g>')
+    t, _ = text("1 block = 2 h", 1160, 204, 20, sub, "end", "mono"); b.append(t)
+    sky = card_sky(st)
+    return svg(W, H, "".join(b), f"{hours} hours of coding, all time", sky)
