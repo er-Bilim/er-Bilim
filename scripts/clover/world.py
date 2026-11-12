@@ -216,7 +216,7 @@ def sky_colors(st):
 
 
 # ---------------------------------------------------------------- the island
-def build_island(st, ox=860, oy=140, s=20):
+def build_island(st, ox=860, oy=118, s=20):
     p = SEASONS[st["season"]]
     night = st["phase"] == "night"
     rnd = random.Random(4)
@@ -425,15 +425,20 @@ def build_island(st, ox=860, oy=140, s=20):
     if waterfall:
         x, y = waterfall
         a0, a1 = iso.P(x, y + 1, 0), iso.P(x + 1, y + 1, 0)
-        depth = 300
-        wf = f'<path d="M{a0[0]:.1f} {a0[1]:.1f} L{a1[0]:.1f} {a1[1]:.1f} L{a1[0]:.1f} {a1[1] + depth:.1f} L{a0[0]:.1f} {a0[1] + depth:.1f}Z" fill="{p["water"]}" opacity=".85"/>'
+        depth = 100  # the water thins out into mist instead of running off the card
+        wf = (f'<linearGradient id="wfade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{p["water"]}" stop-opacity=".9"/>'
+              f'<stop offset=".6" stop-color="{p["water"]}" stop-opacity=".55"/><stop offset="1" stop-color="{p["water"]}" stop-opacity="0"/></linearGradient>'
+              f'<path d="M{a0[0]:.1f} {a0[1]:.1f} L{a1[0]:.1f} {a1[1]:.1f} L{a1[0]:.1f} {a1[1] + depth:.1f} L{a0[0]:.1f} {a0[1] + depth:.1f}Z" fill="url(#wfade)"/>')
         for k in range(5):
             xk = a0[0] + (a1[0] - a0[0]) * (k + .5) / 5
             yk = a0[1] + (a1[1] - a0[1]) * (k + .5) / 5
-            wf += f'<path d="M{xk:.1f} {yk:.1f} V{yk + depth:.1f}" stroke="#ffffff" stroke-width="1.6" stroke-dasharray="10 18" class="pour" style="animation-delay:{-k * .27:.2f}s" opacity=".75"/>'
+            wf += f'<path d="M{xk:.1f} {yk:.1f} V{yk + depth * .8:.1f}" stroke="#ffffff" stroke-width="1.6" stroke-dasharray="10 18" class="pour" style="animation-delay:{-k * .27:.2f}s" opacity=".6"/>'
+        mx, my = (a0[0] + a1[0]) / 2, a1[1] + depth * .85
+        wf += "".join(f'<circle cx="{mx + dx:.1f}" cy="{my + dy:.1f}" r="{r}" fill="#ffffff" opacity=".28" class="glow" style="animation-delay:{-k:.1f}s"/>'
+                      for k, (dx, dy, r) in enumerate([(-10, 0, 10), (8, 4, 12), (0, 12, 9), (-16, 12, 7), (16, 14, 7)]))
         front.append(wf)
         if "rainbow" in st["rare"]:
-            cx, cy = (a0[0] + a1[0]) / 2, a1[1] + 120
+            cx, cy = (a0[0] + a1[0]) / 2, a1[1] + 90
             front.insert(0, "".join(f'<path d="M{cx - r} {cy} A{r} {r} 0 0 1 {cx + r} {cy}" stroke="{c}" stroke-width="5" fill="none" opacity=".45"/>'
                                     for r, c in zip(range(150, 115, -7), ["#f28b82", "#fbbc6c", "#fde58a", "#9fd6a8", "#8fb8de", "#b9a6e0"])))
     # vines + crystals under the island
@@ -677,7 +682,8 @@ def header(st):
     elif st["phase"] == "evening":
         b.append(f'<rect width="{W}" height="{H}" fill="#f2a072" opacity=".12"/>')
     b.append(lights)
-    b.append(fore)
+    b.append(f'<mask id="bottomfade"><linearGradient id="bf" x1="0" y1="0" x2="0" y2="1"><stop offset=".78" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>'
+             f'<rect width="{W}" height="{H}" fill="url(#bf)"/></mask><g mask="url(#bottomfade)">{fore}</g>')
     ink = "#f3eee6" if night else INK
     sub = "#c9c4dc" if night else shade(INK, 1.9)
     nm, _ = block_name("BILIM", 66, 156, 16, st)
