@@ -1,21 +1,26 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/er-Bilim/er-Bilim/main/assets/banner.svg" alt="er-Bilim" width="100%" />
+  <img src="./assets/header.svg" alt="Bilim" width="100%" />
 </div>
 
-<br/>
+<picture><source media="(prefers-color-scheme: dark)" srcset="./assets/divider-dark.svg"><img src="./assets/divider-light.svg" width="100%" alt="" /></picture>
+
+```yaml
+now:
+  building:  devio          # FastAPI backend, side project
+  shipping:  client work    # 15-month pro course, real projects
+  studying:  CS @ International University of Kyrgyzstan
+  prefers:   writing code > talking about code
+```
 
 <p align="center">
-  <a href="https://github.com/er-Bilim"><img height="180em" align="top" src="./profile/stats.svg" /></a>
-  <a href="https://github.com/er-Bilim"><img height="180em" align="top" src="./profile/top-langs.svg" /></a>
+  <img src="https://skillicons.dev/icons?i=ts,js,vue,sass,python,django,fastapi,postgres,docker,git,linux&perline=11&theme=light" />
 </p>
 
-<div align="center">
+<picture><source media="(prefers-color-scheme: dark)" srcset="./assets/divider-dark.svg"><img src="./assets/divider-light.svg" width="100%" alt="" /></picture>
 
-<br/>
-
-[![wakatime](https://wakatime.com/badge/user/4cb5727d-c163-4c42-866c-a48cd6d37d56.svg)](https://wakatime.com/@4cb5727d-c163-4c42-866c-a48cd6d37d56)
-
-</div>
+<p align="center">
+  <img src="./profile/stats.svg" height="190" />
+</p>
 
 <!--START_SECTION:waka-->
 
@@ -32,3 +37,18 @@ SCSS             1 hr 26 mins          ▓░░░░░░░░░░░░�
 ```
 
 <!--END_SECTION:waka-->
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="./assets/divider-dark.svg"><img src="./assets/divider-light.svg" width="100%" alt="" /></picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/er-Bilim/er-Bilim/output/snake-dark.svg">
+  <img src="https://raw.githubusercontent.com/er-Bilim/er-Bilim/output/snake-light.svg" width="100%" alt="contribution graph" />
+</picture>
+
+<p align="center">
+  <a href="https://t.me/erk_bilim"><img src="https://img.shields.io/badge/telegram-erk__bilim-fbfaf6?style=flat-square&logo=telegram&logoColor=141414&labelColor=fbfaf6&color=141414" /></a>
+  <a href="https://www.linkedin.com/in/bilim-erkinbekov"><img src="https://img.shields.io/badge/linkedin-bilim--erkinbekov-fbfaf6?style=flat-square&logo=linkedin&logoColor=141414&labelColor=fbfaf6&color=141414" /></a>
+  <a href="https://instagram.com/esoatna"><img src="https://img.shields.io/badge/instagram-esoatna-fbfaf6?style=flat-square&logo=instagram&logoColor=141414&labelColor=fbfaf6&color=141414" /></a>
+</p>
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="./assets/footer-dark.svg"><img src="./assets/footer-light.svg" width="100%" alt="" /></picture>

@@ -17,16 +17,9 @@ jobs:
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: stats
-          options: username=er-Bilim&role=OWNER,ORGANIZATION_MEMBER&show_icons=true&include_all_commits=true&bg_color=161b22&border_color=21262d&title_color=7ea88a&icon_color=5f8a6d&text_color=c9d1d9&ring_color=7ea88a
+          # ink on paper, matches the header; green ring = the lucky clover
+          options: username=er-Bilim&role=OWNER,ORGANIZATION_MEMBER&show_icons=true&include_all_commits=true&hide=contribs&bg_color=fbfaf6&border_color=141414&title_color=141414&icon_color=141414&text_color=2a2a2a&ring_color=4fa35f&border_radius=16
           path: profile/stats.svg
-          token: ${{ secrets.STATS_PAT }}
-
-      - name: Generate top languages card
-        uses: stats-organization/github-readme-stats-action@v2
-        with:
-          card: top-langs
-          options: username=er-Bilim&layout=compact&langs_count=8&bg_color=161b22&border_color=21262d&title_color=7ea88a&text_color=c9d1d9
-          path: profile/top-langs.svg
           token: ${{ secrets.STATS_PAT }}
 
       - name: Commit cards
