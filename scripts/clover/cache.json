@@ -1,6 +1,37 @@
 {
-  "stats": {"commits": 2100, "prs": 115, "issues": 109, "reviews": 10, "stars": 6, "followers": 2, "level": "B+", "percentile": 46.3},
-  "waka": {"languages": [
-    {"name": "TypeScript", "percent": 56.77}, {"name": "Python", "percent": 24.41}, {"name": "C++", "percent": 10.28},
-    {"name": "Markdown", "percent": 4.23}, {"name": "SCSS", "percent": 2.65}], "total": "54 hrs 35 mins"}
+  "stats": {
+    "commits": 2118,
+    "prs": 115,
+    "issues": 109,
+    "reviews": 51,
+    "stars": 6,
+    "followers": 2,
+    "level": "B+",
+    "percentile": 46.0
+  },
+  "waka": {
+    "languages": [
+      {
+        "name": "TypeScript",
+        "percent": 56.77
+      },
+      {
+        "name": "Python",
+        "percent": 24.41
+      },
+      {
+        "name": "C++",
+        "percent": 10.28
+      },
+      {
+        "name": "Markdown",
+        "percent": 4.23
+      },
+      {
+        "name": "SCSS",
+        "percent": 2.65
+      }
+    ],
+    "total": "54 hrs 35 mins"
+  }
 }
