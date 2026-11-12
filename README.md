@@ -1,8 +1,8 @@
 <div align="center">
-  <img src="./assets/header.svg" alt="Bilim" width="100%" />
+  <img src="./assets/header.svg" alt="Bilim — a floating island that changes with the weather, season and commits" width="100%" />
 </div>
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="./assets/divider-dark.svg"><img src="./assets/divider-light.svg" width="100%" alt="" /></picture>
+<img src="./assets/divider.svg" width="100%" alt="" />
 
 ```yaml
 now:
@@ -12,14 +12,14 @@ now:
   prefers:   writing code > talking about code
 ```
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="./assets/divider-dark.svg"><img src="./assets/divider-light.svg" width="100%" alt="" /></picture>
+<img src="./assets/divider.svg" width="100%" alt="" />
 
 <p align="center">
   <img src="./assets/stats.svg" width="49%" alt="GitHub stats" />
   <img src="./assets/langs.svg" width="49%" alt="Languages, last 30 days" />
 </p>
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="./assets/divider-dark.svg"><img src="./assets/divider-light.svg" width="100%" alt="" /></picture>
+<img src="./assets/divider.svg" width="100%" alt="" />
 
 <p align="center">
   <a href="https://t.me/erk_bilim"><img src="https://img.shields.io/badge/telegram-erk__bilim-fbfaf6?style=flat-square&logo=telegram&logoColor=141414&labelColor=fbfaf6&color=141414" /></a>
@@ -27,4 +27,4 @@ now:
   <a href="https://instagram.com/esoatna"><img src="https://img.shields.io/badge/instagram-esoatna-fbfaf6?style=flat-square&logo=instagram&logoColor=141414&labelColor=fbfaf6&color=141414" /></a>
 </p>
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="./assets/footer-dark.svg"><img src="./assets/footer-light.svg" width="100%" alt="" /></picture>
+<img src="./assets/footer.svg" width="100%" alt="clover garden" />

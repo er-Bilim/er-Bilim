@@ -1,11 +1,15 @@
-name: Clover
+name: Clover island
 
-# Redraws the profile pictures once a day (Bishkek morning):
-# seasonal header meadow, daily four-leaf luck, stats card, languages clover.
+# Redraws the floating island four times a day (Bishkek morning / day / evening / night):
+# weather from this week's commits, season, holidays, rare events, island growth,
+# language districts from WakaTime and the daily four-leaf clover.
 on:
   workflow_dispatch:
   schedule:
-    - cron: "17 0 * * *"
+    - cron: "7 1 * * *"   # 07:07 Bishkek, morning
+    - cron: "7 7 * * *"   # 13:07, day
+    - cron: "7 13 * * *"  # 19:07, evening
+    - cron: "7 17 * * *"  # 23:07, night
   push:
     branches: [main]
     paths:
@@ -28,6 +32,8 @@ jobs:
         with:
           python-version: "3.12"
 
+      - run: pip install fonttools
+
       - name: Draw
         env:
           GH_TOKEN: ${{ secrets.STATS_PAT }}
@@ -40,6 +46,6 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add assets scripts/clover/cache.json
           git diff --cached --quiet && exit 0
-          git commit -m "Clover: daily redraw"
+          git commit -m "Clover: redraw island"
           git pull --rebase
           git push
