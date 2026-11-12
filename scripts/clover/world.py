@@ -313,6 +313,9 @@ def build_island(st, ox=860, oy=140, s=20):
     # --- reserved spot for holiday props (front, visible)
     hx, hy = 3, 7
     used.add((hx, hy))
+    if st["holiday"] == "new year":
+        for c in [(2, 7), (4, 7), (3, 6), (3, 8)]:
+            used.add(c)
 
     # --- districts by language share
     lang = st["langs"]
@@ -376,14 +379,36 @@ def build_island(st, ox=860, oy=140, s=20):
             cx, cy = iso.P(hx + .5, hy + 1, 1.5)
             lights.append(f'<circle cx="{cx:.0f}" cy="{cy:.0f}" r="20" fill="url(#warm)" class="glow"/>')
     elif st["holiday"] == "new year":
-        for z, w in [(1, 0), (2, 0), (3, 0)]:
-            iso.add(hx, hy, z, "#4f9a62", "#3f7f50", "#33693f")
-        for z in (1, 2, 3):
+        # voxel fir: two wide tiers, a narrow top, a gold star cube; garland lights on the visible faces
+        g1, g2, g3 = "#4f9a62", "#5fae72", "#6fbf80"
+        plus = [(0, 0), (1, 0), (-1, 0), (0, 1), (0, -1)]
+        iso.add(hx, hy, 1, "#8f6643")  # trunk
+        for dx, dy in plus:
+            iso.add(hx + dx, hy + dy, 2, g1)
+        iso.add(hx, hy, 3, g2)
+        iso.add(hx, hy, 4, g3)
+        iso.add(hx, hy, 5, "#f2c94c", "#d9ad35", "#c0962a")
+        if st["season"] == "winter":  # snow on the lower tier
+            for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+                iso.put((hx + dx, hy + dy, 2), f'<path d="{iso.face(hx + dx, hy + dy, 2, "top", .1, .1, .9, .9)}" fill="#ffffff" opacity=".85"/>')
+        bulbs = ["#ffd98a", "#f28b82", "#9fd0ec", "#f5a9bf"]
+        for (x, y, z, f) in [(hx + 1, hy, 2, "px"), (hx, hy + 1, 2, "py"), (hx, hy, 3, "px"), (hx, hy, 3, "py"), (hx, hy, 4, "px"), (hx, hy, 4, "py")]:
             for k in range(3):
-                cx, cy = iso.P(hx + rnd.uniform(.2, .9), hy + 1, z + rnd.uniform(.2, .8))
-                lights.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="2.4" fill="{rnd.choice(["#ffd98a", "#f5a9bf", "#9fd0ec"])}" class="tw" style="animation-delay:{-rnd.uniform(0, 2):.1f}s"/>')
-        sx_, sy_ = iso.P(hx + .5, hy + .5, 4.2)
-        lights.append(sparkle(sx_, sy_, 8, fill="#ffd98a"))
+                u, v = rnd.uniform(.15, .85), rnd.uniform(.2, .8)
+                cx, cy = iso.P(x + (1 if f == "px" else u), y + (1 if f == "py" else u), z + v)
+                lights.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="2.6" fill="{rnd.choice(bulbs)}" class="tw" style="animation-delay:{-rnd.uniform(0, 2):.1f}s"/>')
+        sx_, sy_ = iso.P(hx + .5, hy + .5, 6.3)
+        lights.append(sparkle(sx_, sy_, 9, fill="#ffe7a3"))
+        if night:
+            cx, cy = iso.P(hx + .5, hy + .5, 3)
+            lights.append(f'<circle cx="{cx:.0f}" cy="{cy:.0f}" r="44" fill="url(#warm)" class="glow"/>')
+        # gift boxes
+        for (x, y), c in [((2, 8), "#e98d8d"), ((4, 8), "#8fb8de")]:
+            if (x, y, 0) in iso.cubes:
+                gb = Iso(*iso.P(x + .5, y + .2, 1), 6)
+                gb.add(0, 0, 0, c)
+                gb.put((0, 0, 0), f'<path d="{gb.face(0, 0, 0, "top", .42, 0, .58, 1)}" fill="#fff7d6"/><path d="{gb.face(0, 0, 0, "top", 0, .42, 1, .58)}" fill="#fff7d6"/>')
+                front.append(gb.render())
     elif st["holiday"] == "nooruz":
         a0, a1 = iso.P(3, 2.5, tower_h + .6), iso.P(7, 2.5, 4.6)
         flags = ""
@@ -494,14 +519,30 @@ def build_island(st, ox=860, oy=140, s=20):
         i2.add(1, 1, 1, shade(p["side"][1], 1.05)); i2.add(1, 1, 2, p["crown"])
         front.append(f'</g><g class="bob2">{i2.render()}</g><g>')
 
-    # balloon
+    # balloon, built from cubes like everything else
     extra_air = ""
     if "balloon" in U:
-        bxx, byy = ox - 220, oy + 10
-        extra_air = (f'<g class="fly"><path d="M{bxx} {byy} c-26 0 -30 -40 0 -46 c30 6 26 46 0 46z" fill="#e98d8d" stroke="{INK}" stroke-width="1.5"/>'
-                     f'<path d="M{bxx} {byy - 46} v46" stroke="{INK}" stroke-width="1" opacity=".4"/>'
-                     f'<path d="M{bxx - 6} {byy} l2 10 M{bxx + 6} {byy} l-2 10" stroke="{INK}" stroke-width="1.2"/>'
-                     f'<rect x="{bxx - 6}" y="{byy + 10}" width="12" height="8" rx="2" fill="#c99a6a" stroke="{INK}" stroke-width="1.2"/></g>')
+        bx_, by_ = ox - 230, oy + 40
+        bal = Iso(bx_, by_, 8)
+        stripes = ["#e98d8d", "#f6e1c8"]
+        layers = {0: [(1, 1), (2, 1), (1, 2), (2, 2)],
+                  1: [(x, y) for x in range(4) for y in range(4) if (x, y) not in [(0, 0), (3, 3), (0, 3), (3, 0)]],
+                  2: [(x, y) for x in range(4) for y in range(4)],
+                  3: [(x, y) for x in range(4) for y in range(4)],
+                  4: [(x, y) for x in range(4) for y in range(4) if (x, y) not in [(0, 0), (3, 3), (0, 3), (3, 0)]],
+                  5: [(1, 1), (2, 1), (1, 2), (2, 2)]}
+        for z, cs in layers.items():
+            for x, y in cs:
+                bal.add(x, y, z + 4, stripes[x % 2])
+        bal.add(1, 1, 0, "#c99a6a", "#a97a4c", "#8f6643")  # basket
+        bal.add(2, 1, 0, "#c99a6a", "#a97a4c", "#8f6643")
+        bal.add(1, 2, 0, "#c99a6a", "#a97a4c", "#8f6643")
+        bal.add(2, 2, 0, "#c99a6a", "#a97a4c", "#8f6643")
+        ropes = ""
+        for (x, y) in [(1, 1), (3, 1), (1, 3), (3, 3)]:
+            p0, p1 = bal.P(x, y, 1), bal.P(x + (0 if x == 1 else 0), y, 4)
+            ropes += f'<path d="M{p0[0]:.1f} {p0[1]:.1f} L{p1[0]:.1f} {p1[1]:.1f}" stroke="{INK}" stroke-width="1" opacity=".55"/>'
+        extra_air = f'<g class="fly">{ropes}{bal.render()}</g>'
     # fireflies on summer nights
     if night and st["season"] in ("summer", "spring"):
         for k in range(10):
