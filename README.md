@@ -6,15 +6,11 @@
 
 ```yaml
 now:
-  building:  devio          # FastAPI backend, side project
-  shipping:  client work    # 15-month pro course, real projects
+  building:  devio
+  shipping:  client work
   studying:  CS @ International University of Kyrgyzstan
   prefers:   writing code > talking about code
 ```
-
-<p align="center">
-  <img src="https://skillicons.dev/icons?i=ts,js,vue,sass,python,django,fastapi,postgres,docker,git,linux&perline=11&theme=light" />
-</p>
 
 <picture><source media="(prefers-color-scheme: dark)" srcset="./assets/divider-dark.svg"><img src="./assets/divider-light.svg" width="100%" alt="" /></picture>
 
