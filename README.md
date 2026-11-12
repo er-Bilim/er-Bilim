@@ -36,11 +36,6 @@ SCSS             1 hr 26 mins          ▓░░░░░░░░░░░░�
 
 <picture><source media="(prefers-color-scheme: dark)" srcset="./assets/divider-dark.svg"><img src="./assets/divider-light.svg" width="100%" alt="" /></picture>
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/er-Bilim/er-Bilim/output/snake-dark.svg">
-  <img src="https://raw.githubusercontent.com/er-Bilim/er-Bilim/output/snake-light.svg" width="100%" alt="contribution graph" />
-</picture>
-
 <p align="center">
   <a href="https://t.me/erk_bilim"><img src="https://img.shields.io/badge/telegram-erk__bilim-fbfaf6?style=flat-square&logo=telegram&logoColor=141414&labelColor=fbfaf6&color=141414" /></a>
   <a href="https://www.linkedin.com/in/bilim-erkinbekov"><img src="https://img.shields.io/badge/linkedin-bilim--erkinbekov-fbfaf6?style=flat-square&logo=linkedin&logoColor=141414&labelColor=fbfaf6&color=141414" /></a>
