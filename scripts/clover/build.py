@@ -81,25 +81,43 @@ def rank(s):
 
 
 def fetch_waka(key):
-    """Languages for the last 30 days (falls back to 7 days) + all-time total coding time."""
+    """Languages over the longest range WakaTime still allows for this account.
+
+    Since late Oct 2026 the API answers 403 to /stats/last_30_days for many (free) accounts,
+    so every source is tried in turn and the first one that works wins."""
     auth = {"Authorization": "Basic " + base64.b64encode(key.encode()).decode()}
-    out = {}
-    for rng in ("last_30_days", "last_7_days"):
-        data = _get(f"https://wakatime.com/api/v1/users/current/stats/{rng}", auth)["data"]
+    base = "https://wakatime.com/api/v1/users/current"
+
+    def from_stats(rng):
+        data = _get(f"{base}/stats/{rng}", auth)["data"]
         langs = [{"name": l["name"], "percent": l["percent"], "hours": round(l.get("total_seconds", 0) / 3600, 1)}
                  for l in data.get("languages", []) if l["name"] != "Other"]
-        if langs:
-            out = {"languages": langs, "total": data.get("human_readable_total", ""), "range": rng}
-            break
-        print(f"[waka] {rng}: no languages yet (is_up_to_date={data.get('is_up_to_date')}, status={data.get('status')})")
-    try:
-        at = _get("https://wakatime.com/api/v1/users/current/all_time_since_today", auth)["data"]
-        out["all_time"] = at.get("text", "")
-    except Exception as e:
-        print(f"[waka] all-time: {e}")
-    if not out.get("languages"):
-        raise ValueError("wakatime returned no languages")
-    return out
+        return langs, data.get("human_readable_total", "")
+
+    def from_summaries(rng):
+        days = _get(f"{base}/summaries?range={rng.replace('_', ' ').title()}", auth)["data"]
+        secs = {}
+        for day in days:
+            for l in day.get("languages", []):
+                secs[l["name"]] = secs.get(l["name"], 0) + l.get("total_seconds", 0)
+        total = sum(secs.values())
+        langs = [{"name": n, "percent": round(100 * s / total, 2), "hours": round(s / 3600, 1)}
+                 for n, s in sorted(secs.items(), key=lambda kv: -kv[1]) if n != "Other" and total]
+        h, m = divmod(int(total // 60), 60)
+        return langs, f"{h} hrs {m} mins"
+
+    tries = [("last 30 days", lambda: from_stats("last_30_days")), ("last 7 days", lambda: from_stats("last_7_days")),
+             ("last 7 days", lambda: from_summaries("last_7_days"))]
+    for label, fn in tries:
+        try:
+            langs, total = fn()
+            if langs:
+                print(f"[waka] ok: {label}")
+                return {"languages": langs, "total": total, "range": label}
+            print(f"[waka] {label}: empty")
+        except Exception as e:
+            print(f"[waka] {label}: {_explain(e)}")
+    raise ValueError("every WakaTime source failed")
 
 
 WAKA_BADGE = "https://wakatime.com/badge/user/4cb5727d-c163-4c42-866c-a48cd6d37d56.svg"

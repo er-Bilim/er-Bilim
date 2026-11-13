@@ -204,7 +204,7 @@ def make_state(today, phase, season, stats, waka, weekly, latest_repo, lucky_tod
     if rest:
         langs.append(("Other", sum(l["percent"] for l in rest), sum(l.get("hours", 0) for l in rest)))
     return dict(today=today, phase=phase, season=season, stats=stats, weekly=weekly, weather=weather, holiday=holiday,
-                rare=rare, unlocked=unlocked, next=nxt, langs=langs, total=waka.get("total", ""), all_time=waka.get("all_time", ""), repo=latest_repo,
+                rare=rare, unlocked=unlocked, next=nxt, langs=langs, total=waka.get("total", ""), wrange=waka.get("range", "last 30 days"), all_time=waka.get("all_time", ""), repo=latest_repo,
                 lucky=lucky_today, found=found, level=commits // 100)
 
 
@@ -776,7 +776,7 @@ def districts_card(st):
     b = []
     t, _ = text("districts", 30, 56, 34, ink, kind="title"); b.append(t)
     t, _ = text(short_time(st["total"]), 570, 52, 22, ink, "end", "monoB"); b.append(t)
-    sub_line = "languages, last 30 days"
+    sub_line = f"languages, {st['wrange']}"
     t, _ = text(sub_line, 30, 86, 20, sub, kind="mono"); b.append(t)
     icons = []
     # forest / lake / cliffs / meadow icons
@@ -893,14 +893,15 @@ def time_card(st):
     t30 = st.get("total", "")
     hm = re.search(r"(\d+)\s*h", t30)
     h30 = int(hm.group(1)) if hm else 0
-    t, _ = text("last 30 days", 1160, 54, 22, ink, "end", "title"); b.append(t)
+    t, _ = text(st["wrange"], 1160, 54, 22, ink, "end", "title"); b.append(t)
     t, _ = text(short_time(t30) if t30 else "-", 1160, 84, 20, sub, "end", "mono"); b.append(t)
     iso = Iso(1010, 112, 11)
-    n = min(48, max(1, round(h30 / 2)))
+    per = 2 if "30" in st["wrange"] else 1
+    n = min(48, max(1, round(h30 / per)))
     for k in range(n):
         x, y, z = k % 6, (k // 6) % 4, k // 24
         iso.add(x, y, z, p["top"], p["side"][0], p["side"][1])
     b.append(f'<g class="rise">{iso.render()}</g>')
-    t, _ = text("1 block = 2 h", 1160, 204, 20, sub, "end", "mono"); b.append(t)
+    t, _ = text(f"1 block = {per} h", 1160, 204, 20, sub, "end", "mono"); b.append(t)
     sky = card_sky(st)
     return svg(W, H, "".join(b), f"{hours} hours of coding, all time", sky)
