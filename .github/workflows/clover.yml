@@ -1,15 +1,16 @@
 name: Clover island
 
-# Redraws the floating island four times a day (Bishkek morning / day / evening / night):
+# Redraws the floating island when Bishkek time moves to morning (06-11), day (11-18),
+# evening (18-22) or night (22-06):
 # weather from this week's commits, season, holidays, rare events, island growth,
 # language districts from WakaTime and the daily four-leaf clover.
 on:
   workflow_dispatch:
   schedule:
-    - cron: "7 1 * * *"   # 07:07 Bishkek, morning
-    - cron: "7 7 * * *"   # 13:07, day
-    - cron: "7 13 * * *"  # 19:07, evening
-    - cron: "7 17 * * *"  # 23:07, night
+    # every hour: GitHub delays or skips scheduled runs, so hourly checks catch the
+    # morning / day / evening / night switch (Bishkek time) within an hour.
+    # A commit only happens when the pictures actually change.
+    - cron: "23 * * * *"
   push:
     branches: [main]
     paths:
@@ -44,8 +45,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets scripts/clover/cache.json
-          git diff --cached --quiet && exit 0
+          git add assets
+          git diff --cached --quiet && exit 0   # pictures unchanged: no commit
+          git add scripts/clover/cache.json
           git commit -m "Clover: redraw island"
           git pull --rebase
           git push
