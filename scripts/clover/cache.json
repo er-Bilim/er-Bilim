@@ -33,7 +33,7 @@
       }
     ],
     "total": "54 hrs 35 mins",
-    "all_time": "1,869 hrs 7 mins"
+    "all_time": "1,871 hrs 47 mins"
   },
   "weekly": 31,
   "repo": "devio",
@@ -1604,7 +1604,7 @@
       },
       {
         "name": "Python",
-        "bytes": 416844,
+        "bytes": 432934,
         "color": "#3572A5",
         "repos": 14
       },
