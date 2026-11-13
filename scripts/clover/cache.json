@@ -1,6 +1,6 @@
 {
   "stats": {
-    "commits": 2132,
+    "commits": 2133,
     "prs": 115,
     "issues": 109,
     "reviews": 51,
@@ -35,7 +35,7 @@
     "total": "54 hrs 35 mins",
     "all_time": "1,869 hrs 7 mins"
   },
-  "weekly": 27,
+  "weekly": 30,
   "repo": "devio",
   "repos": [
     {
@@ -1547,11 +1547,15 @@
       ],
       [
         "2026-11-13",
-        7
+        8
+      ],
+      [
+        "2026-11-14",
+        2
       ]
     ],
-    "total": 2251,
-    "streak": 4,
+    "total": 2254,
+    "streak": 5,
     "longest": 79
   },
   "commits": [
@@ -1583,5 +1587,83 @@
       "date": "2026-11-10T19:01:26Z",
       "oid": "a2b74436b08241e2d12cb56d1b022e8f1e0ab14d"
     }
-  ]
+  ],
+  "langs_gh": {
+    "langs": [
+      {
+        "name": "TypeScript",
+        "bytes": 2779751,
+        "color": "#3178c6",
+        "repos": 43
+      },
+      {
+        "name": "JavaScript",
+        "bytes": 438897,
+        "color": "#f1e05a",
+        "repos": 62
+      },
+      {
+        "name": "Python",
+        "bytes": 416844,
+        "color": "#3572A5",
+        "repos": 14
+      },
+      {
+        "name": "HTML",
+        "bytes": 390611,
+        "color": "#e34c26",
+        "repos": 62
+      },
+      {
+        "name": "CSS",
+        "bytes": 293717,
+        "color": "#663399",
+        "repos": 53
+      },
+      {
+        "name": "SCSS",
+        "bytes": 34056,
+        "color": "#c6538c",
+        "repos": 6
+      },
+      {
+        "name": "Vue",
+        "bytes": 14862,
+        "color": "#41b883",
+        "repos": 1
+      },
+      {
+        "name": "PLpgSQL",
+        "bytes": 11805,
+        "color": "#336790",
+        "repos": 1
+      },
+      {
+        "name": "Dockerfile",
+        "bytes": 2744,
+        "color": "#384d54",
+        "repos": 3
+      },
+      {
+        "name": "Sass",
+        "bytes": 727,
+        "color": "#a53b70",
+        "repos": 1
+      },
+      {
+        "name": "Mako",
+        "bytes": 704,
+        "color": "#7e858d",
+        "repos": 1
+      },
+      {
+        "name": "Shell",
+        "bytes": 389,
+        "color": "#89e051",
+        "repos": 2
+      }
+    ],
+    "repos": 89,
+    "private": 83
+  }
 }
