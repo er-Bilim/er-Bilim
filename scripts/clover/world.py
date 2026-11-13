@@ -1770,7 +1770,7 @@ def strata_card(st):
     out, front = [], []
     rnd = random.Random(3)
     # floating pebbles around the block
-    for (fx, fy, fz, sz) in [(-2.6, 2, -3, .9), (-1.2, -2.5, 1.5, .6), (-3.2, 6, -8.4, .55), (2, -3, 3.4, .5)]:
+    for (fx, fy, fz, sz) in [(-2.6, 2, -3, .9), (-1.5, 4.5, -1.6, .55), (-3.2, 6, -8.4, .55), (9.6, 1, -10.5, .5)]:
         front.append(f'<g class="bob" style="animation-delay:{fx:.1f}s">{ibox(P, fx, fy, fz, sz, sz, sz * .8, *_C(shade(p["side"][1], .9), dim))}</g>')
     # rocky tip, vines and a crystal underneath
     out.append(ibox(P, 1.2, .8, -total_h - 1.4, 4.6, 2.8, 1.4, *_C(shade(p["side"][1], .8), dim)))
@@ -1861,9 +1861,9 @@ def strata_card(st):
         b.append(f'<rect x="538" y="{y1 - 9:.1f}" width="18" height="18" rx="4" fill="{r["color"]}"/>')
         t, _ = text(r["name"].lower(), 568, y1 + 7, 21, ink, kind="monoB"); b.append(t)
         bw = 150 * r["pct"] / top_pct
-        b.append(f'<rect x="742" y="{y1 - 4:.1f}" width="150" height="8" rx="4" fill="{sub}" opacity=".18"/>'
-                 f'<rect x="742" y="{y1 - 4:.1f}" width="{max(bw, 4):.1f}" height="8" rx="4" fill="{r["color"]}"/>')
-        t, _ = text(f'{r["pct"]:.1f}%', 990, y1 + 7, 21, ink, "end", "monoB"); b.append(t)
+        b.append(f'<rect x="736" y="{y1 - 4:.1f}" width="130" height="8" rx="4" fill="{sub}" opacity=".18"/>'
+                 f'<rect x="736" y="{y1 - 4:.1f}" width="{max(bw * 130 / 150, 4):.1f}" height="8" rx="4" fill="{r["color"]}"/>')
+        t, _ = text(f'{r["pct"]:.1f}%', 960, y1 + 7, 21, ink, "end", "monoB"); b.append(t)
         meta = _size(r["bytes"]) + (f' · {r["repos"]}' if r.get("repos") else "")
         t, mw = text(meta, 1160, y1 + 7, 18, sub, "end", "mono"); b.append(t)
     t, _ = text("size · repos", 1160, 120, 15, sub, "end", "mono"); b.append(t)
