@@ -1686,3 +1686,240 @@ def chest_card(st):
         b.append(sprite(name, x + 30, y + 14, 4, silhouette=not n, night=night))
         t, _ = text(f"×{n}" if n else "???", x + 50, y + 80, 18, ink if n else sub, "middle", "monoB" if n else "mono"); b.append(t)
     return svg(W, H, "".join(b), "daily chest with a dog guarding it", card_sky(st))
+
+
+# ---------------------------------------------------------------- languages (GitHub, private repos included)
+def _lang_rows(st, k=6):
+    d = st.get("langs_gh") or {}
+    rows = sorted(d.get("langs", []), key=lambda r: -r["bytes"])
+    total = sum(r["bytes"] for r in rows) or 1
+    top, rest = rows[:k], rows[k:]
+    out = [dict(r, pct=100 * r["bytes"] / total, color=r.get("color") or LANG_COLORS.get(r["name"], LANG_COLORS[None])) for r in top]
+    if rest:
+        out.append({"name": "other", "bytes": sum(r["bytes"] for r in rest), "pct": 100 * sum(r["bytes"] for r in rest) / total,
+                    "color": "#b9b3c6", "repos": None})
+    return out, d
+
+
+def _size(n):
+    for u in ("B", "KB", "MB", "GB"):
+        if n < 1024:
+            return f"{n:.0f} {u}" if u == "B" else f"{n:.1f} {u}"
+        n /= 1024
+    return f"{n:.1f} TB"
+
+
+FOSSILS = {  # tiny things buried in each layer (a pun per language). k = dark, w = bone, a/b = accents
+    "python": ["..www....", ".w...w...", ".....w...", "...ww....", "..w......", ".w....w..", "..wwww..."],
+    "typescript": ["...k.....", "..kak....", ".kaabk...", "kaaabbk..", ".kabbk...", "..kbk....", "...k....."],
+    "javascript": ["..aaaa...", ".aaakaa..", "aakkkaa..", "aaakaaa..", ".aaaaa...", "..aaa....", "........."],
+    "vue": ["ka.....ak", ".ka...ak.", "..ka.ak..", "...kak...", "....k....", ".........", "........."],
+    "html": ["kkkkkkkk.", "kaakaaak.", "kkkkkkkk.", "kaaakaak.", "kkkkkkkk.", ".........", "........."],
+    "css": ["...a.....", "..aaa....", ".aaaaa...", ".aawaa...", ".aaaaa...", "..aaa....", "........."],
+    "dockerfile": [".....w...", "..kk.k...", "kkkkkk...", "kaaaaaak.", ".kaaaaak.", "..kkkkk..", "........."],
+    "shell": ["...kk....", "..kwak...", ".kwawak..", "kwawawak.", ".kkkkkk..", ".........", "........."],
+}
+
+
+def _fossil(name, x, y, px, layer):
+    if name.lower() == "python":   # a snake skeleton: wavy spine, ribs, skull
+        bone, dk = "#f4ecda", shade(layer, .45)
+        L = 13 * px
+        out = [f'<path d="M{x:.1f} {y + 4 * px:.1f} q{L / 8:.1f} {-2.5 * px:.1f} {L / 4:.1f} 0 t{L / 4:.1f} 0 t{L / 4:.1f} 0 t{L / 4:.1f} 0" stroke="{bone}" stroke-width="{px:.1f}" fill="none" stroke-linecap="round"/>']
+        for k in range(1, 12):
+            rx_ = x + k * L / 12
+            ph = math.sin(k / 12 * 4 * math.pi) * -1.25 * px
+            out.append(f'<path d="M{rx_:.1f} {y + 4 * px + ph - 1.6 * px:.1f} v{3.2 * px:.1f}" stroke="{bone}" stroke-width="{px * .55:.1f}" opacity=".9"/>')
+        out.append(f'<ellipse cx="{x + L + 1.6 * px:.1f}" cy="{y + 4 * px:.1f}" rx="{2 * px:.1f}" ry="{1.4 * px:.1f}" fill="{bone}"/>'
+                   f'<circle cx="{x + L + 2.2 * px:.1f}" cy="{y + 3.6 * px:.1f}" r="{px * .45:.1f}" fill="{dk}"/>')
+        return f'<g opacity=".9"><title>a python fossil</title>{"".join(out)}</g>'
+    rows = FOSSILS.get(name.lower())
+    if not rows:
+        return ""
+    pal = {"k": shade(layer, .45), "w": "#f4ecda", "a": shade(layer, 1.35), "b": shade(layer, .8)}
+    out = []
+    for r, row in enumerate(rows):
+        for c, ch in enumerate(row):
+            if ch != ".":
+                out.append(f'<rect x="{x + c * px:.1f}" y="{y + r * px:.1f}" width="{px + .2:.1f}" height="{px + .2:.1f}" fill="{pal[ch]}"/>')
+    return f'<g opacity=".85"><title>a {name.lower()} fossil</title>{"".join(out)}</g>'
+
+
+def strata_card(st):
+    """Full width: a cut through the island, every layer of rock is a language (thickness = share of code)."""
+    W, H = 1200, 430
+    night = st["phase"] == "night"
+    ink = "#f3eee6" if night else INK
+    sub = "#c9c4dc" if night else shade(INK, 1.9)
+    p = SEASONS[st["season"]]
+    rows, d = _lang_rows(st)
+    b = []
+    t, _ = text("what it's made of", 40, 58, 34, ink, kind="title"); b.append(t)
+    n_rep, n_priv = d.get("repos", 0), d.get("private", 0)
+    t, _ = text(f"a cut through the island · {n_rep} repos, {n_priv} of them private", 40, 90, 20, sub, kind="mono"); b.append(t)
+    if not rows:
+        return svg(W, H, "".join(b), "languages as layers of the island", card_sky(st))
+    s = 16
+    iso = Iso(236, 150, s)
+    P = iso.P
+    dim = .85 if night else 1
+    total_h, mins = 9.6, .6
+    hs = [max(mins, total_h * r["pct"] / 100) for r in rows]
+    hs = [h * total_h / sum(hs) for h in hs]
+    X, Y = 7, 4.4
+    out, front = [], []
+    rnd = random.Random(3)
+    # floating pebbles around the block
+    for (fx, fy, fz, sz) in [(-2.6, 2, -3, .9), (-1.2, -2.5, 1.5, .6), (-3.2, 6, -8.4, .55), (2, -3, 3.4, .5)]:
+        front.append(f'<g class="bob" style="animation-delay:{fx:.1f}s">{ibox(P, fx, fy, fz, sz, sz, sz * .8, *_C(shade(p["side"][1], .9), dim))}</g>')
+    # rocky tip, vines and a crystal underneath
+    out.append(ibox(P, 1.2, .8, -total_h - 1.4, 4.6, 2.8, 1.4, *_C(shade(p["side"][1], .8), dim)))
+    out.append(ibox(P, 2.6, 1.5, -total_h - 2.5, 2, 1.4, 1.1, *_C(shade(p["side"][1], .7), dim)))
+    cx_, cy_ = P(3.6, 2.9, -total_h - 2.5)
+    out.append(f'<path d="M{cx_ - 4:.1f} {cy_:.1f} l4 12 l4 -12z" fill="#9fe3e8" opacity=".9"/><path d="M{cx_ + 3:.1f} {cy_ - 1:.1f} l3 8 l3 -8z" fill="#7ccfe0"/>')
+    for (vx, vy) in [(.6, 4.4), (3.0, 4.4), (5.6, 4.4), (7, 2.2)]:
+        a, bq = P(vx, vy, -total_h)
+        ln = 22 + (vx * 7) % 18
+        out.append(f'<path d="M{a:.1f} {bq:.1f} q4 {ln / 2:.0f} -1 {ln:.0f}" stroke="{shade(p["leaf"], .8 * dim)}" stroke-width="1.8" fill="none" class="sway2"/>'
+                   f'<circle cx="{a - 1:.1f}" cy="{bq + ln:.1f}" r="2" fill="{shade(p["leaf"], dim)}"/>')
+    dx_, dy_ = P(3.6, 2.9, -total_h - 2.5)
+    out.append(f'<circle cx="{dx_:.1f}" cy="{dy_ + 14:.1f}" r="1.8" fill="{p["water"]}" class="drip"/>')
+    z = 0.0
+    mids = []
+    for li, (r, h) in enumerate(zip(rows, hs)):
+        z0 = -z - h
+        c = mix(r["color"], "#efe6d8", .18)
+        top_, py_, px_ = _C(c, dim)
+        out.append(f'<path d="{poly([P(0, Y, z0), P(X, Y, z0), P(X, Y, z0 + h), P(0, Y, z0 + h)])}" fill="{py_}"/>'
+                   f'<path d="{poly([P(X, 0, z0), P(X, Y, z0), P(X, Y, z0 + h), P(X, 0, z0 + h)])}" fill="{px_}"/>')
+        lr = random.Random(r["name"])
+        # sediment lines
+        for k in range(int(h * 1.6)):
+            zz = z0 + h * (k + 1) / (int(h * 1.6) + 1)
+            a0, a1, a2 = P(0, Y, zz), P(X, Y, zz + lr.uniform(-.08, .08)), P(X, 0, zz + lr.uniform(-.08, .08))
+            out.append(f'<path d="M{a0[0]:.1f} {a0[1]:.1f} L{a1[0]:.1f} {a1[1]:.1f} L{a2[0]:.1f} {a2[1]:.1f}" stroke="{shade(c, .7)}" stroke-width="1" fill="none" opacity=".35" stroke-dasharray="{lr.randint(10, 30)} {lr.randint(4, 12)}"/>')
+        for _ in range(int(2 + h * 3)):
+            if lr.random() < .5:
+                qx, qy = P(lr.uniform(.3, X - .3), Y, lr.uniform(z0 + .15, z0 + h - .15))
+            else:
+                qx, qy = P(X, lr.uniform(.3, Y - .3), lr.uniform(z0 + .15, z0 + h - .15))
+            out.append(f'<ellipse cx="{qx:.1f}" cy="{qy:.1f}" rx="{lr.uniform(1.5, 3):.1f}" ry="1.4" fill="{shade(c, .6)}" opacity=".45"/>')
+        # the fossil of this language, if the layer is thick enough
+        if h * s >= 15:
+            fx, fy = P(lr.uniform(1.2, X - 2.6), Y, z0 + h / 2)
+            out.append(_fossil(r["name"], fx - 8, fy - 6 + 5, 2 if h * s < 26 else 2.6, c))
+        out.append(f'<path d="M{P(0, Y, z0)[0]:.1f} {P(0, Y, z0)[1]:.1f} L{P(X, Y, z0)[0]:.1f} {P(X, Y, z0)[1]:.1f} L{P(X, 0, z0)[0]:.1f} {P(X, 0, z0)[1]:.1f}" stroke="{shade(c, .55)}" stroke-width="1.2" fill="none" opacity=".6"/>')
+        if li == 0:   # a small mine in the top layer: tunnel, rails and a lantern
+            m0, m1 = P(X, 2.4, z0 + .25), P(X, 3.6, z0 + .25)
+            tx_, ty_ = P(X, 3.0, z0 + .25)
+            out.append(f'<path d="M{m0[0]:.1f} {m0[1]:.1f} L{m1[0]:.1f} {m1[1]:.1f} L{m1[0]:.1f} {m1[1] - 18:.1f} Q{tx_:.1f} {ty_ - 30:.1f} {m0[0]:.1f} {m0[1] - 18:.1f}Z" fill="#241c2e"/>')
+            lx_, ly_ = P(X, 2.15, z0 + 1.35)
+            out.append(f'<circle cx="{lx_:.1f}" cy="{ly_:.1f}" r="{14 if night else 9}" fill="url(#halo)" class="glow"/>'
+                       f'<rect x="{lx_ - 2.5:.1f}" y="{ly_ - 3:.1f}" width="5" height="6" rx="1" fill="#ffd884" stroke="#5a3a22" stroke-width="1"/>')
+            # roots of the tree reaching into the top layer
+            for rx_, rl in [(4.8, 1.3), (5.6, 1.0), (6.3, 1.5)]:
+                r0 = P(rx_, Y, 0)
+                r1 = P(rx_ + .3, Y, -rl)
+                out.append(f'<path d="M{r0[0]:.1f} {r0[1]:.1f} Q{r0[0] - 4:.1f} {(r0[1] + r1[1]) / 2:.1f} {r1[0]:.1f} {r1[1]:.1f}" stroke="{shade(p["side"][1], .7)}" stroke-width="1.6" fill="none" opacity=".8"/>')
+        mids.append(z0 + h / 2)
+        z += h
+    gx, gy = P(1.6, Y, -total_h + .4)
+    out.append(f'<g><title>a bone keko buried</title><path d="M{gx - 7:.1f} {gy:.1f} h14" stroke="#ffd25a" stroke-width="3" stroke-linecap="round"/>'
+               + "".join(f'<circle cx="{gx + dx:.1f}" cy="{gy + dy:.1f}" r="1.8" fill="#ffd25a"/>' for dx in (-8, 8) for dy in (-1.6, 1.6)) + '</g>')
+    # top: grass, tree, flowers, a clover, a little signpost
+    grass = mix(p["top"], "#9fd38a", .6) if st["season"] == "autumn" else p["top"]
+    out.append(ibox(P, 0, 0, 0, X, Y, .6, *_C(grass, dim)))
+    out.append(ibox(P, 5, 1.2, .6, .5, .5, 1.8, *_C(shade(p["side"][1], 1.05), dim)))
+    crown = p["crown"] if st["season"] != "winter" else "#f4f7fd"
+    out.append(ibox(P, 4.3, .5, 2.3, 1.9, 1.9, 1.5, *_C(crown, dim)))
+    out.append(ibox(P, 4.8, 1, 3.8, 1, 1, .7, *_C(shade(crown, 1.06), dim)))
+    for (fx, fy) in [(1.2, 3.4), (2.9, 3.9), (6.4, 3.6), (.8, 1.4)]:
+        qx, qy = P(fx, fy, .6)
+        out.append(f'<path d="M{qx:.1f} {qy:.1f} v-6" stroke="{shade(p["leaf"], .8)}" stroke-width="1.3"/><circle cx="{qx:.1f}" cy="{qy - 7:.1f}" r="2.2" fill="{["#f5a9bf", "#ffd884", "#ffffff", "#c9a7f0"][int(fx * 3) % 4]}"/>')
+    cx_, cy_ = P(2.2, 2.2, .6)
+    out.append(f'<g class="sway2">{standing_clover(cx_, cy_, 6, p["leaf"], 4, 14)}</g>')
+    sx_, sy_ = P(.9, 3.1, .6)
+    out.append(f'<rect x="{sx_ - 1.2:.1f}" y="{sy_ - 18:.1f}" width="2.4" height="18" fill="#7a5a46"/><path d="M{sx_ - 13:.1f} {sy_ - 22:.1f} h22 l5 5 l-5 5 h-22z" fill="#c99a6a" stroke="#7a5a46" stroke-width="1"/>')
+    t, _ = text("code", sx_ - 2, sy_ - 13, 9, INK, "middle", "monoB"); out.append(t)
+    b.append(f'<g class="bob">{"".join(out)}{"".join(front)}</g>')
+    # labels: leader line, colour, name, a little bar, share, size and repos
+    ys = [P(X, Y / 2, m)[1] for m in mids]
+    gap = 36
+    lab = list(ys)
+    lab[0] = max(lab[0], 148)
+    for i in range(1, len(lab)):
+        lab[i] = max(lab[i], lab[i - 1] + gap)
+    shift = max(0, lab[-1] - (H - 30))
+    lab = [y - shift for y in lab]
+    for i in range(len(lab) - 2, -1, -1):
+        lab[i] = min(lab[i], lab[i + 1] - gap)
+    top_pct = rows[0]["pct"] or 1
+    for r, y0, y1 in zip(rows, ys, lab):
+        ex, _ = P(X, Y / 2, 0)
+        b.append(f'<path d="M{ex + 4:.1f} {y0:.1f} C{ex + 70:.1f} {y0:.1f} {450:.1f} {y1:.1f} {505:.1f} {y1:.1f} H530" stroke="{sub}" stroke-width="1.4" fill="none" opacity=".7"/>'
+                 f'<circle cx="{ex + 4:.1f}" cy="{y0:.1f}" r="2.5" fill="{sub}"/>')
+        b.append(f'<rect x="538" y="{y1 - 9:.1f}" width="18" height="18" rx="4" fill="{r["color"]}"/>')
+        t, _ = text(r["name"].lower(), 568, y1 + 7, 21, ink, kind="monoB"); b.append(t)
+        bw = 150 * r["pct"] / top_pct
+        b.append(f'<rect x="742" y="{y1 - 4:.1f}" width="150" height="8" rx="4" fill="{sub}" opacity=".18"/>'
+                 f'<rect x="742" y="{y1 - 4:.1f}" width="{max(bw, 4):.1f}" height="8" rx="4" fill="{r["color"]}"/>')
+        t, _ = text(f'{r["pct"]:.1f}%', 990, y1 + 7, 21, ink, "end", "monoB"); b.append(t)
+        meta = _size(r["bytes"]) + (f' · {r["repos"]}' if r.get("repos") else "")
+        t, mw = text(meta, 1160, y1 + 7, 18, sub, "end", "mono"); b.append(t)
+    t, _ = text("size · repos", 1160, 120, 15, sub, "end", "mono"); b.append(t)
+    return svg(W, H, "".join(b), "languages as layers of the island", card_sky(st))
+
+
+def districts_gh_card(st):
+    """Full width: a square plot of 100 tiles, 1 tile = 1% of all code; each language is a district with houses."""
+    W, H = 1200, 360
+    night = st["phase"] == "night"
+    ink = "#f3eee6" if night else INK
+    sub = "#c9c4dc" if night else shade(INK, 1.9)
+    p = SEASONS[st["season"]]
+    rows, d = _lang_rows(st)
+    b = []
+    t, _ = text("districts", 40, 58, 34, ink, kind="title"); b.append(t)
+    t, _ = text(f"1 tile = 1% of the code · {d.get('repos', 0)} repos, private too", 40, 90, 20, sub, kind="mono"); b.append(t)
+    if not rows:
+        return svg(W, H, "".join(b), "languages as districts", card_sky(st))
+    # largest remainder → exactly 100 tiles
+    raw = [r["pct"] for r in rows]
+    cnt = [int(x) for x in raw]
+    for i in sorted(range(len(raw)), key=lambda i: -(raw[i] - cnt[i]))[:100 - sum(cnt)]:
+        cnt[i] += 1
+    owner = []
+    for i, c in enumerate(cnt):
+        owner += [i] * c
+    # fill the 10x10 plot in a snake by diagonals so districts stay in one piece
+    order = [(x, y) for x in range(10) for y in (range(10) if x % 2 == 0 else range(9, -1, -1))]
+    tile = {c: owner[k] for k, c in enumerate(order)}
+    iso = Iso(330, 150, 15)
+    dim = .85 if night else 1
+    for x in range(10):
+        for y in range(10):
+            iso.add(x, y, -1, *_C(shade(p["side"][0], .95), dim))
+    for (x, y), i in tile.items():
+        c = mix(rows[i]["color"], "#ffffff", .12)
+        iso.add(x, y, 0, *_C(c, dim))
+    # houses: about one per 6 tiles of a district, roofs in the language colour
+    rnd = random.Random(7)
+    for i in range(len(rows)):
+        cells = [c for c, o in tile.items() if o == i]
+        rnd.shuffle(cells)
+        for (x, y) in cells[:max(1, len(cells) // 6) if rows[i]["name"] != "other" else 0]:
+            hgt = 1 + (rnd.random() < .35)
+            for zz in range(1, hgt + 1):
+                iso.add(x, y, zz, *_C("#f3eee6" if not night else "#cfc8dc", dim))
+            iso.add(x, y, hgt + 1, *_C(rows[i]["color"], dim))
+            iso.put((x, y, 1), "")
+    b.append(f'<g class="bob">{iso.render()}</g>')
+    # legend
+    y = 140
+    for r, c in zip(rows, cnt):
+        b.append(f'<rect x="680" y="{y - 13}" width="18" height="18" rx="4" fill="{r["color"]}"/>')
+        t, _ = text(r["name"].lower(), 712, y + 3, 21, ink, kind="monoB"); b.append(t)
+        t, _ = text(f'{c} tile{"s" if c != 1 else ""}', 1010, y + 3, 20, sub, "end", "mono"); b.append(t)
+        t, _ = text(_size(r["bytes"]), 1160, y + 3, 20, ink, "end", "monoB"); b.append(t)
+        y += 31
+    return svg(W, H, "".join(b), "languages as districts", card_sky(st))

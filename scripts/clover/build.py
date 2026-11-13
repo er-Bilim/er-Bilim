@@ -156,6 +156,29 @@ def fetch_commits(token):
     return sorted(out, key=lambda c: c["date"], reverse=True)[:4]
 
 
+def fetch_langs(token):
+    """Bytes of code per language across all own repos, private ones included (the token must see them)."""
+    h = {"Authorization": f"bearer {token}"}
+    q = """query($after: String) { viewer { repositories(first: 100, after: $after, ownerAffiliations: [OWNER], isFork: false) {
+      pageInfo { hasNextPage endCursor }
+      nodes { name isPrivate languages(first: 20, orderBy: {field: SIZE, direction: DESC}) { edges { size node { name color } } } } } } }"""
+    langs, repos, private, after = {}, 0, 0, None
+    while True:
+        r = _get("https://api.github.com/graphql", h, json.dumps({"query": q, "variables": {"after": after}}).encode()
+                 )["data"]["viewer"]["repositories"]
+        for n in r["nodes"]:
+            repos += 1
+            private += n["isPrivate"]
+            for e in n["languages"]["edges"]:
+                L = langs.setdefault(e["node"]["name"], {"name": e["node"]["name"], "bytes": 0, "color": e["node"]["color"], "repos": 0})
+                L["bytes"] += e["size"]
+                L["repos"] += 1
+        if not r["pageInfo"]["hasNextPage"]:
+            break
+        after = r["pageInfo"]["endCursor"]
+    return {"langs": sorted(langs.values(), key=lambda x: -x["bytes"]), "repos": repos, "private": private}
+
+
 def rank(s):
     """Same formula as github-readme-stats (all commits mode)."""
     exp_cdf = lambda x: 1 - 2 ** -x  # noqa: E731
@@ -276,6 +299,7 @@ def main():
                 cache["repos"] = fetch_repos(os.environ["GH_TOKEN"])
                 cache["calendar"] = fetch_calendar(os.environ["GH_TOKEN"])
                 cache["commits"] = fetch_commits(os.environ["GH_TOKEN"])
+                cache["langs_gh"] = fetch_langs(os.environ["GH_TOKEN"])
             except Exception as e:  # keep yesterday's numbers instead of failing
                 print(f"[github] using cache: {_explain(e)}")
         if os.environ.get("WAKATIME_API_KEY"):
@@ -306,10 +330,11 @@ def main():
     st["repos"] = cache.get("repos", [])
     st["calendar"] = cache.get("calendar", {})
     st["commits"] = cache.get("commits", [])
+    st["langs_gh"] = cache.get("langs_gh", {})
     out = {
         "header.svg": world.header(st),
         "stats.svg": world.stats_card(st),
-        "repos.svg": world.archipelago_card(st), "land.svg": world.terrain_card(st), "train.svg": world.train_card(st), "chest.svg": world.chest_card(st),
+        "repos.svg": world.archipelago_card(st), "land.svg": world.terrain_card(st), "train.svg": world.train_card(st), "chest.svg": world.chest_card(st), "langs.svg": world.strata_card(st),
         "footer.svg": world.garden_footer(st),
         "divider.svg": world.divider(),
         "time.svg": world.time_card(st),

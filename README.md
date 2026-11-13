@@ -20,6 +20,10 @@ now:
 </p>
 
 <p align="center">
+  <img src="./assets/langs.svg" width="99%" alt="languages across all repos, as layers of the island" />
+</p>
+
+<p align="center">
   <img src="./assets/chest.svg" width="99%" alt="daily chest: a commit opens it, a leonberger guards it" />
 </p>
 
