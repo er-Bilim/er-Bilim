@@ -145,6 +145,15 @@ STYLE = """<style>
   .vine { transform-box: fill-box; transform-origin: top; animation: vine 4s ease-in-out infinite alternate; } @keyframes vine { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
   .bird { animation: bird 16s ease-in-out infinite; } @keyframes bird { 50% { transform: translate(60px,-14px); } }
   .spin { transform-box: fill-box; transform-origin: center; animation: spin 6s linear infinite; } @keyframes spin { to { transform: rotate(360deg); } }
+  .whale { animation: whale 16s ease-in-out infinite alternate; } @keyframes whale { from { transform: translate(14px, 6px); } to { transform: translate(-26px, -10px); } }
+  .fluke { animation: fluke 3.4s ease-in-out infinite alternate; } @keyframes fluke { from { transform: rotate(-7deg); } to { transform: rotate(7deg); } }
+  .fin { animation: fluke 2.6s ease-in-out infinite alternate-reverse; }
+  .spout { transform-box: fill-box; transform-origin: center; animation: spout 5s ease-out infinite; opacity: 0; } @keyframes spout { 0% { transform: translate(0,0) scale(.3); opacity: 0; } 10% { opacity: .9; } 40% { transform: translate(-4px,-22px) scale(1.4); opacity: 0; } 100% { opacity: 0; } }
+  .drip { animation: drip 4s ease-in infinite; } @keyframes drip { 0%, 60% { transform: translateY(0); opacity: 0; } 65% { opacity: 1; } 100% { transform: translateY(60px); opacity: 0; } }
+  .blink { transform-box: fill-box; transform-origin: center; animation: blink 5s infinite; } @keyframes blink { 0%, 90%, 96%, 100% { transform: scaleY(1); } 93% { transform: scaleY(.08); } }
+  .flap { transform-box: fill-box; transform-origin: center; animation: flap .22s ease-in-out infinite alternate; } @keyframes flap { to { transform: scaleX(.25); } }
+  .bounce { animation: bounce 1.1s cubic-bezier(.5,0,.5,1) infinite alternate; } @keyframes bounce { to { transform: translateY(-22px); } }
+  .hop { animation: hop 3.2s ease-in-out infinite; } @keyframes hop { 0%, 70%, 100% { transform: translate(0,0); } 76% { transform: translate(-6px,-9px); } 82% { transform: translate(-12px,0); } 88% { transform: translate(-6px,-7px); } 94% { transform: translate(0,0); } }
   .wag { animation: wag .45s ease-in-out infinite alternate; } @keyframes wag { from { transform: rotate(-16deg); } to { transform: rotate(16deg); } }
   .zz { animation: zz 3s ease-out infinite; opacity: 0; } @keyframes zz { 0% { transform: translate(0,0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate(10px,-26px); opacity: 0; } }
   .breathe { transform-box: fill-box; transform-origin: bottom; animation: breathe 3.2s ease-in-out infinite; } @keyframes breathe { 50% { transform: scaleY(1.06); } }
@@ -317,6 +326,9 @@ def build_island(st, ox=860, oy=118, s=20):
     # --- reserved spot for holiday props (front, visible)
     hx, hy = 3, 7
     used.add((hx, hy))
+    # --- you: sitting on the edge with a laptop, legs over the side
+    used.update({(1, 7), (2, 7)})
+    iso.put((1, 7, 0), coder(iso, 1, 7, night))
     if st["holiday"] == "new year":
         for c in [(2, 7), (4, 7), (3, 6), (3, 8)]:
             used.add(c)
@@ -623,8 +635,7 @@ def dog(P, v, mood, night):
         B(.2, 12.6, 8.2, 5.6, .3, 1.2, mane)                   # cheek fluff
         B(1.9, 13.2, 8.4, 2.2, 2, 2, mask)                     # muzzle
         out.append(f'<path d="{face(13.21, 1.1, 10.2, 4.9, 11.6)}" fill="{shade(mask, 1.4)}" opacity=".55"/>')   # mask round the eyes
-        for ex in (1.5, 3.6):
-            out.append(f'<path d="{face(13.22, ex, 10.6, ex + .9, 11.3)}" fill="#f7f1e3"/><path d="{face(13.23, ex + .2, 10.6, ex + .7, 11.1)}" fill="{INK}"/>')
+        out.append('<g class="blink">' + "".join(f'<path d="{face(13.22, ex, 10.6, ex + .9, 11.3)}" fill="#f7f1e3"/><path d="{face(13.23, ex + .2, 10.6, ex + .7, 11.1)}" fill="{INK}"/>' for ex in (1.5, 3.6)) + '</g>')
         out.append(f'<path d="{face(15.21, 2.6, 9.2, 3.4, 10.4)}" fill="{INK}"/>')                # nose
         out.append(f'<path d="{face(15.22, 2.6, 7.4, 3.4, 8.6)}" fill="#f08a9a"/>')               # tongue
         B(4.5, 10.2, 9, 1.1, 2.2, 3.2, ear)
@@ -653,8 +664,7 @@ def dog(P, v, mood, night):
             for ex in (1.5, 3.6):
                 out.append(f'<path d="{face(13.22, ex, hz + 2.2, ex + .9, hz + 2.5)}" fill="{INK}"/>')
         else:
-            for ex in (1.5, 3.6):
-                out.append(f'<path d="{face(13.22, ex, hz + 2.2, ex + .9, hz + 2.9)}" fill="#f7f1e3"/><path d="{face(13.23, ex + .2, hz + 2.2, ex + .7, hz + 2.7)}" fill="{INK}"/>')
+            out.append('<g class="blink">' + "".join(f'<path d="{face(13.22, ex, hz + 2.2, ex + .9, hz + 2.9)}" fill="#f7f1e3"/><path d="{face(13.23, ex + .2, hz + 2.2, ex + .7, hz + 2.7)}" fill="{INK}"/>' for ex in (1.5, 3.6)) + '</g>')
         B(4.5, 10.2, hz + .8, 1.1, 2.2, 3, ear)
         if sleep:
             zx, zy = P(5, 12, hz + 6)
@@ -663,6 +673,39 @@ def dog(P, v, mood, night):
                            f'stroke-width="{v * .35:.1f}" fill="none" stroke-linejoin="round" class="zz" style="animation-delay:{k:.0f}s"/>')
     title = {"happy": "happy: there was a commit today", "waiting": "waiting for today's commit", "sleep": "asleep"}[mood]
     return f'<g><title>{DOG_NAME} is {title}</title>{"".join(out)}</g>'
+
+
+def dog_friends(P, v, mood, night, opened, cx0, cy0):
+    """So keko is not bored: a ball, a little bird on the chest, a butterfly (a firefly at night)."""
+    out = []
+    # ball: bounces when keko is happy, otherwise rests by the paws
+    bx, by = P(8.2, 14.5, 0)
+    ball = (f'<circle cx="{bx:.1f}" cy="{by - 9:.1f}" r="9" fill="#e0574c"/>'
+            f'<path d="M{bx - 9:.1f} {by - 9:.1f} a9 9 0 0 0 18 0z" fill="#f7f1e3"/>'
+            f'<path d="M{bx - 9:.1f} {by - 9:.1f} h18" stroke="{INK}" stroke-width="1.4"/><circle cx="{bx - 3:.1f}" cy="{by - 13:.1f}" r="2" fill="#ffffff" opacity=".7"/>')
+    out.append(f'<ellipse cx="{bx:.1f}" cy="{by:.1f}" rx="8" ry="3" fill="{INK}" opacity=".15"/>')
+    out.append(f'<g class="bounce">{ball}</g>' if mood == "happy" else ball)
+    # a little bird on the chest (not at night)
+    if not night:
+        wx, wy = P(cx0 + 8.6, cy0 - .7, 13.2) if opened else P(cx0 + 7.5, cy0 + 3, 8.6)
+        bird = (f'<ellipse cx="{wx:.1f}" cy="{wy - 6:.1f}" rx="7" ry="5.5" fill="#6a8fd6"/>'
+                f'<circle cx="{wx - 5:.1f}" cy="{wy - 11:.1f}" r="4.2" fill="#6a8fd6"/>'
+                f'<path d="M{wx - 9:.1f} {wy - 11:.1f} l-4 1.5 l4 1.5z" fill="#f0a63c"/>'
+                f'<circle cx="{wx - 6:.1f}" cy="{wy - 12:.1f}" r="1.1" fill="{INK}"/>'
+                f'<ellipse cx="{wx - 1:.1f}" cy="{wy - 4:.1f}" rx="4" ry="2.6" fill="#f3eee6"/>'
+                f'<path d="M{wx + 6:.1f} {wy - 7:.1f} l6 -3 l-1 5z" fill="#4f6fb4"/>'
+                f'<path d="M{wx - 2:.1f} {wy - 1:.1f} v2 M{wx + 1:.1f} {wy - 1:.1f} v2" stroke="#f0a63c" stroke-width="1.2"/>')
+        out.append(f'<g class="hop">{bird}</g>')
+    # butterfly (firefly at night) circling around keko's head
+    hx, hy = P(3, 12, 14.5)
+    path = f"M{hx + 34:.1f} {hy:.1f} a34 13 0 1 1 -68 0 a34 13 0 1 1 68 0"
+    if night:
+        bug = '<circle r="6" fill="url(#halo)" opacity=".9"/><circle r="2" fill="#f7f3a0"/>'
+    else:
+        bug = ('<g class="flap"><path d="M0 0 C-7 -9 -10 -2 -2 1Z M0 0 C7 -9 10 -2 2 1Z" fill="#f5a9bf"/>'
+               '<path d="M0 0 C-5 6 -7 2 -1 1Z M0 0 C5 6 7 2 1 1Z" fill="#e98d8d"/></g><path d="M0 -3 v5" stroke="#2b2540" stroke-width="1.2"/>')
+    out.append(f'<g>{bug}<animateMotion dur="9s" repeatCount="indefinite" path="{path}"/></g>')
+    return "".join(out)
 
 
 SYNODIC = 29.530588853
@@ -840,6 +883,82 @@ def chip(x, y, label, dark=False):
     return f'<rect x="{x}" y="{y}" width="{w + 28:.0f}" height="36" rx="18" fill="{bg}" opacity="{.62 if not dark else .7}"/>{t}', w + 28
 
 
+def coder(iso, X, Y, night):
+    """A tiny figure on the island's edge: black hair, dark hoodie, laptop on the knees (clover on the lid)."""
+    P = lambda x, y, z: iso.P(X + x, Y + y, z)  # noqa: E731
+    d = .8 if night else 1
+    out = []
+    B = lambda c, *bx: out.append(ibox(P, *bx, *_C(c, d)))  # noqa: E731
+    hood, jeans, skin, hair, shoe = "#3b3653", "#5d7fb0", "#f2d3b8", "#1f1b2b", "#f3eee6"
+    B(jeans, .34, .66, 1, .32, .34, .12)             # thighs on the edge
+    for lx in (.36, .53):
+        B(jeans, lx, 1.0, .58, .11, .1, .5)          # shins over the side
+        B(shoe, lx, 1.0, .5, .11, .14, .09)
+    B(hood, .3, .4, 1, .4, .3, .5)                   # torso
+    B(hood, .27, .38, 1.38, .46, .2, .14)            # hood bunched on the shoulders
+    B(skin, .34, .44, 1.5, .32, .3, .3)              # head
+    B(hair, .32, .42, 1.76, .36, .34, .1)
+    B(hair, .32, .42, 1.56, .36, .08, .22)           # back of the hair
+    # laptop: base on the knees, lid up facing him (we see the back of the lid)
+    B("#c9cdd8", .32, .68, 1.12, .36, .26, .03)
+    B("#aeb4c4", .32, .66, 1.15, .36, .03, .28)
+    lx, ly = P(.5, .69, 1.29)
+    out.append(f'<circle cx="{lx:.1f}" cy="{ly:.1f}" r="1.3" fill="#5fb36f"/>')
+    if night:
+        gx, gy = P(.5, .6, 1.45)
+        out.append(f'<circle cx="{gx:.1f}" cy="{gy:.1f}" r="3.5" fill="#bfe3ff" opacity=".45" class="glow"/>')
+    # legs swing a little
+    return f'<g><title>Bilim, coding on the edge of the island</title>{"".join(out)}</g>'
+
+
+def sky_whale(st, ox, oy, v=5.2):
+    """A slow voxel whale drifting behind the island, with a tiny meadow (and a tree) growing on its back."""
+    night = st["phase"] == "night"
+    p = SEASONS[st["season"]]
+    d = .95 if night else 1
+    P = lambda x, y, z: (ox + (x - y) * v, oy + (x + y) * v / 2 - z * v)  # noqa: E731
+    body, back_, belly = "#7896cf", "#5f7dba", "#e8eef9"
+    out, tail = [], []
+    B = lambda c, *bx: out.append(ibox(P, *bx, *_C(c, d)))  # noqa: E731
+    face_y = lambda y, x0, z0, x1, z1: poly([P(x0, y, z0), P(x1, y, z0), P(x1, y, z1), P(x0, y, z1)])  # noqa: E731
+    sx, sy = P(5, 4, 8)
+    for k in range(3):
+        out.append(f'<circle cx="{sx:.1f}" cy="{sy:.1f}" r="{v * .9:.1f}" fill="{"#dfe9f7" if not night else "#9fb4dc"}" class="spout" style="animation-delay:{k * .5:.1f}s"/>')
+    B(body, 0, 1, .6, 2.2, 6, 5.6)                   # rounded snout
+    B(body, 2, 0, 0, 8, 8, 7)                        # head
+    B(back_, 3, 1, 7, 6.4, 6, .5)
+    B(body, 10, .5, .5, 10, 7, 6)
+    B(body, 20, 1.8, 1.4, 6, 4.4, 4.4)
+    ax, ay = P(26, 4, 3.6)
+    tail.append(ibox(P, 26, 2.8, 2.4, 4, 2.4, 2.2, *_C(body, d)))
+    tail.append(ibox(P, 29, -2.2, 3.1, 2.6, 12.4, .7, *_C(back_, d)))
+    out.append(f'<g class="fluke" style="transform-origin:{ax:.1f}px {ay:.1f}px">{"".join(tail)}</g>')
+    bc = shade(belly, d)
+    out.append(f'<path d="{face_y(7.01, 0, .6, 2.2, 2.2)}" fill="{bc}"/><path d="{face_y(8.01, 2, 0, 10, 2.4)}" fill="{bc}"/>'
+               f'<path d="{face_y(7.51, 10, .5, 20, 2.2)}" fill="{bc}"/><path d="{face_y(6.21, 20, 1.4, 26, 2.4)}" fill="{bc}"/>')
+    out.append(f'<path d="{face_y(8.02, 2.6, 4.2, 3.8, 5.3)}" fill="{INK}"/>')
+    mx0, my0 = P(2, 8.02, 2.6); mx1, my1 = P(8, 8.02, 2.5)
+    out.append(f'<path d="M{mx0:.1f} {my0:.1f} Q{(mx0 + mx1) / 2:.1f} {(my0 + my1) / 2 + 3:.1f} {mx1:.1f} {my1:.1f}" stroke="{shade(body, .55)}" stroke-width="1.4" fill="none"/>')
+    fx, fy = P(9, 8, 1.6)
+    out.append(f'<g class="fin" style="transform-origin:{fx:.1f}px {fy:.1f}px">{ibox(P, 8, 8, 1.2, 4, 3.4, .6, *_C(back_, d))}</g>')
+    grass = mix(p["top"], "#9fd38a", .6) if st["season"] == "autumn" else p["top"]
+    B(grass, 9, 1.5, 6.5, 10, 5, .7)
+    B(shade(p["side"][1], 1.05), 15, 3, 7.2, 1, 1, 2.2)
+    B(p["crown"] if st["season"] != "winter" else "#f4f7fd", 14, 2, 9.4, 3, 3, 2.4)
+    for cx, cy in [(11, 3), (12.5, 5), (17.5, 4.5)]:
+        px_, py_ = P(cx, cy, 7.2)
+        out.append(f'<circle cx="{px_ - 2:.1f}" cy="{py_:.1f}" r="1.8" fill="{p["leaf"]}"/><circle cx="{px_ + 2:.1f}" cy="{py_:.1f}" r="1.8" fill="{p["leaf"]}"/>'
+                   f'<circle cx="{px_:.1f}" cy="{py_ - 2:.1f}" r="1.8" fill="{p["leaf"]}"/>')
+    dx_, dy_ = P(19, 6.5, 6.5)
+    out.append(f'<circle cx="{dx_:.1f}" cy="{dy_:.1f}" r="1.6" fill="{p["water"]}" class="drip"/>')
+    if night:
+        for x, z in [(4, 1.2), (8, .9), (12.5, 1.4), (16, 1.1), (21, 2.2)]:
+            gx, gy = P(x, 7.6 if x < 19 else 6.2, z + 1.4)
+            out.append(f'<circle cx="{gx:.1f}" cy="{gy:.1f}" r="6" fill="url(#halo)" class="glow" style="animation-delay:{x * .3:.1f}s"/>'
+                       f'<circle cx="{gx:.1f}" cy="{gy:.1f}" r="1.6" fill="#bff3ff"/>')
+    return f'<g class="whale"><title>a sky whale passing by</title>{"".join(out)}</g>'
+
+
 # ---------------------------------------------------------------- header
 def header(st):
     W, H = 1200, 420
@@ -847,7 +966,7 @@ def header(st):
     back, fore = sky_layer(st, W, H, rnd)
     world, lights, _ = build_island(st)
     night = st["phase"] == "night"
-    b = [back, world]
+    b = [back, sky_whale(st, 548, 300, 4.6), world]
     if night:
         b.append(f'<rect width="{W}" height="{H}" fill="#141a33" opacity=".42"/>')
     elif st["phase"] == "evening":
@@ -1532,6 +1651,7 @@ def chest_card(st):
     chest.append(f'<rect x="{kx - 1.5:.1f}" y="{ky - 2:.1f}" width="3" height="5" fill="#5a3a22"/>')
     scene.append(dog(P, v, mood, night))
     scene.append("".join(chest))
+    scene.append(dog_friends(P, v, mood, night, opened, cx0, cy0))
     sx, sy = P(-1.2, 16.5, 0)
     plank = "#c99a6a" if not night else "#8f6e50"
     t, nw = text(DOG_NAME, sx, sy - 30, 17, INK, "middle", "monoB")
