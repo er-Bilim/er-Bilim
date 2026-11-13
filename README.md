@@ -16,11 +16,11 @@ now:
 
 <p align="center">
   <img src="./assets/stats.svg" width="49%" alt="GitHub stats" />
-  <img src="./assets/langs.svg" width="49%" alt="Languages, last 30 days" />
+  <img src="./assets/time.svg" width="49%" alt="time at the keyboard, all time" />
 </p>
 
 <p align="center">
-  <img src="./assets/time.svg" width="99%" alt="time at the keyboard, all time" />
+  <img src="./assets/chest.svg" width="99%" alt="daily chest: a commit opens it, a leonberger guards it" />
 </p>
 
 <img src="./assets/divider.svg" width="100%" alt="" />

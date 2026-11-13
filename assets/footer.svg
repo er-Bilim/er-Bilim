@@ -10,6 +10,10 @@
   .vine { transform-box: fill-box; transform-origin: top; animation: vine 4s ease-in-out infinite alternate; } @keyframes vine { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
   .bird { animation: bird 16s ease-in-out infinite; } @keyframes bird { 50% { transform: translate(60px,-14px); } }
   .spin { transform-box: fill-box; transform-origin: center; animation: spin 6s linear infinite; } @keyframes spin { to { transform: rotate(360deg); } }
+  .wag { animation: wag .45s ease-in-out infinite alternate; } @keyframes wag { from { transform: rotate(-16deg); } to { transform: rotate(16deg); } }
+  .zz { animation: zz 3s ease-out infinite; opacity: 0; } @keyframes zz { 0% { transform: translate(0,0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate(10px,-26px); opacity: 0; } }
+  .breathe { transform-box: fill-box; transform-origin: bottom; animation: breathe 3.2s ease-in-out infinite; } @keyframes breathe { 50% { transform: scaleY(1.06); } }
+  .hover { animation: hover 2.6s ease-in-out infinite alternate; } @keyframes hover { from { transform: translateY(0); } to { transform: translateY(-8px); } }
   .beam { transform-box: view-box; animation: beam 6s ease-in-out infinite alternate; } @keyframes beam { from { opacity: .15; } to { opacity: .6; } }
   .fly { animation: fly 9s ease-in-out infinite alternate; } @keyframes fly { from { transform: translate(-10px,6px); } to { transform: translate(14px,-8px); } }
   .star { stroke-dasharray: 0 300; animation: star 9s ease-in infinite; }

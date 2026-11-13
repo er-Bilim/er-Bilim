@@ -68,6 +68,94 @@ def fetch_github(token):
     return {**raw, **rank(raw)}, u["week"]["totalCommitContributions"], repo
 
 
+def fetch_rhythm(token):
+    """Commit hours (Bishkek time) from recent public commits + contribution streaks from the calendar."""
+    h = {"Authorization": f"bearer {token}", "Accept": "application/vnd.github+json"}
+    hours = [0] * 24
+    for page in (1, 2, 3):
+        items = _get(f"https://api.github.com/search/commits?q=author:{LOGIN}&sort=author-date&order=desc&per_page=100&page={page}", h)["items"]
+        for it in items:
+            t = dt.datetime.fromisoformat(it["commit"]["author"]["date"].replace("Z", "+00:00")).astimezone(BISHKEK)
+            hours[t.hour] += 1
+        if len(items) < 100:
+            break
+    q = """query($login: String!) { user(login: $login) { contributionsCollection { contributionCalendar { weeks { contributionDays { date contributionCount } } } } } }"""
+    cal = _get("https://api.github.com/graphql", {"Authorization": f"bearer {token}"},
+               json.dumps({"query": q, "variables": {"login": LOGIN}}).encode())["data"]["user"]["contributionsCollection"]["contributionCalendar"]
+    days = [d for w in cal["weeks"] for d in w["contributionDays"]]
+    best = run = 0
+    for d in days:
+        run = run + 1 if d["contributionCount"] else 0
+        best = max(best, run)
+    cur = 0
+    for i, d in enumerate(reversed(days)):
+        if d["contributionCount"]:
+            cur += 1
+        elif i == 0:
+            continue  # today without commits yet doesn't break the streak
+        else:
+            break
+    return {"hours": hours, "streak": cur, "best_streak": best}
+
+
+def fetch_repos(token):
+    """Latest public repos with language, size and commit count."""
+    q = """query($login: String!) { user(login: $login) { repositories(first: 8, privacy: PUBLIC, ownerAffiliations: [OWNER], isFork: false,
+      orderBy: {field: PUSHED_AT, direction: DESC}) { nodes { name diskUsage stargazerCount primaryLanguage { name }
+      defaultBranchRef { target { ... on Commit { history { totalCount } } } } } } } }"""
+    nodes = _get("https://api.github.com/graphql", {"Authorization": f"bearer {token}"},
+                 json.dumps({"query": q, "variables": {"login": LOGIN}}).encode())["data"]["user"]["repositories"]["nodes"]
+    out = []
+    for n in nodes:
+        if n["name"].lower() == LOGIN.lower():
+            continue
+        commits = ((n.get("defaultBranchRef") or {}).get("target") or {}).get("history", {}).get("totalCount", 0)
+        out.append({"name": n["name"], "lang": (n.get("primaryLanguage") or {}).get("name"), "size": n.get("diskUsage") or 0,
+                    "stars": n["stargazerCount"], "commits": commits})
+    return out[:4]
+
+
+def fetch_calendar(token):
+    """Last year of contributions (same data as the green grid on the profile) + streaks."""
+    q = """query($login: String!) { user(login: $login) { contributionsCollection { contributionCalendar {
+      totalContributions weeks { contributionDays { date contributionCount } } } } } }"""
+    cal = _get("https://api.github.com/graphql", {"Authorization": f"bearer {token}"},
+               json.dumps({"query": q, "variables": {"login": LOGIN}}).encode())["data"]["user"]["contributionsCollection"]["contributionCalendar"]
+    days = [(d["date"], d["contributionCount"]) for w in cal["weeks"] for d in w["contributionDays"]]
+    streak = 0
+    for i, (_, c) in enumerate(reversed(days)):
+        if c:
+            streak += 1
+        elif i:          # today may still be empty — the streak is not broken yet
+            break
+    longest = run = 0
+    for _, c in days:
+        run = run + 1 if c else 0
+        longest = max(longest, run)
+    return {"days": days, "total": cal["totalContributions"], "streak": streak, "longest": longest}
+
+
+def fetch_commits(token):
+    """Newest own commits across public repos (for the train). Messages only, no diffs."""
+    h = {"Authorization": f"bearer {token}"}
+    uid = _get("https://api.github.com/graphql", h, json.dumps({"query": "query($l: String!) { user(login: $l) { id } }",
+                                                                "variables": {"l": LOGIN}}).encode())["data"]["user"]["id"]
+    q = """query($login: String!, $id: ID!) { user(login: $login) { repositories(first: 6, privacy: PUBLIC, ownerAffiliations: [OWNER],
+      isFork: false, orderBy: {field: PUSHED_AT, direction: DESC}) { nodes { name primaryLanguage { name }
+      defaultBranchRef { target { ... on Commit { history(first: 4, author: {id: $id}) { nodes { oid messageHeadline committedDate } } } } } } } } }"""
+    nodes = _get("https://api.github.com/graphql", h, json.dumps({"query": q, "variables": {"login": LOGIN, "id": uid}}).encode()
+                 )["data"]["user"]["repositories"]["nodes"]
+    out = []
+    for n in nodes:
+        if n["name"].lower() == LOGIN.lower():
+            continue
+        hist = (((n.get("defaultBranchRef") or {}).get("target") or {}).get("history") or {}).get("nodes", [])
+        for c in hist:
+            out.append({"repo": n["name"], "lang": (n.get("primaryLanguage") or {}).get("name"), "msg": c["messageHeadline"],
+                        "date": c["committedDate"], "oid": c["oid"]})
+    return sorted(out, key=lambda c: c["date"], reverse=True)[:4]
+
+
 def rank(s):
     """Same formula as github-readme-stats (all commits mode)."""
     exp_cdf = lambda x: 1 - 2 ** -x  # noqa: E731
@@ -185,6 +273,9 @@ def main():
         if os.environ.get("GH_TOKEN"):
             try:
                 cache["stats"], cache["weekly"], cache["repo"] = fetch_github(os.environ["GH_TOKEN"])
+                cache["repos"] = fetch_repos(os.environ["GH_TOKEN"])
+                cache["calendar"] = fetch_calendar(os.environ["GH_TOKEN"])
+                cache["commits"] = fetch_commits(os.environ["GH_TOKEN"])
             except Exception as e:  # keep yesterday's numbers instead of failing
                 print(f"[github] using cache: {_explain(e)}")
         if os.environ.get("WAKATIME_API_KEY"):
@@ -212,10 +303,13 @@ def main():
     found = a.found if a.found is not None else found_until(today)
     st = world.make_state(today, phase, world_season(today.month), stats, cache["waka"],
                           a.weekly if a.weekly is not None else cache.get("weekly", 0), cache.get("repo", ""), is_lucky, found)
+    st["repos"] = cache.get("repos", [])
+    st["calendar"] = cache.get("calendar", {})
+    st["commits"] = cache.get("commits", [])
     out = {
         "header.svg": world.header(st),
         "stats.svg": world.stats_card(st),
-        "langs.svg": world.districts_card(st),
+        "repos.svg": world.archipelago_card(st), "land.svg": world.terrain_card(st), "train.svg": world.train_card(st), "chest.svg": world.chest_card(st),
         "footer.svg": world.garden_footer(st),
         "divider.svg": world.divider(),
         "time.svg": world.time_card(st),
