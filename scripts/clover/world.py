@@ -10,6 +10,7 @@ What drives what:
   date                      -> holidays (New Year, Nooruz, Halloween)
   date + phase hash         -> rare events: shooting star, aurora, a cat on the bench, rainbow
 """
+import datetime as dt
 import hashlib
 import math
 import random
@@ -154,6 +155,9 @@ STYLE = """<style>
   .flap { transform-box: fill-box; transform-origin: center; animation: flap .22s ease-in-out infinite alternate; } @keyframes flap { to { transform: scaleX(.25); } }
   .bounce { animation: bounce 1.1s cubic-bezier(.5,0,.5,1) infinite alternate; } @keyframes bounce { to { transform: translateY(-22px); } }
   .hop { animation: hop 3.2s ease-in-out infinite; } @keyframes hop { 0%, 70%, 100% { transform: translate(0,0); } 76% { transform: translate(-6px,-9px); } 82% { transform: translate(-12px,0); } 88% { transform: translate(-6px,-7px); } 94% { transform: translate(0,0); } }
+  .swish { animation: swish 1.8s ease-in-out infinite alternate; } @keyframes swish { from { transform: rotate(-12deg); } to { transform: rotate(14deg); } }
+  .puff2 { transform-box: fill-box; transform-origin: center; animation: puff2 3.3s ease-out infinite; opacity: 0; } @keyframes puff2 { 0% { transform: translate(0,0) scale(.4); opacity: .8; } 100% { transform: translate(-22px,-40px) scale(1.8); opacity: 0; } }
+  .ripple { transform-box: fill-box; transform-origin: center; animation: ripple 3.6s ease-out infinite; } @keyframes ripple { 0% { transform: scale(.2); opacity: 1; } 100% { transform: scale(1.4); opacity: 0; } }
   .wag { animation: wag .45s ease-in-out infinite alternate; } @keyframes wag { from { transform: rotate(-16deg); } to { transform: rotate(16deg); } }
   .zz { animation: zz 3s ease-out infinite; opacity: 0; } @keyframes zz { 0% { transform: translate(0,0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate(10px,-26px); opacity: 0; } }
   .breathe { transform-box: fill-box; transform-origin: bottom; animation: breathe 3.2s ease-in-out infinite; } @keyframes breathe { 50% { transform: scaleY(1.06); } }
@@ -1070,40 +1074,102 @@ def districts_card(st):
 
 
 def garden_footer(st):
-    W, H = 1200, 150
+    """Full-width strip of meadow: one tuft per day since the luck started. One day in ten grows four leaves.
+    Today has a flag; the days ahead are still sprouts (the next four-leaf is only hinted at)."""
+    W, H = 1200, 220
     p = SEASONS[st["season"]]
     night = st["phase"] == "night"
     ink = "#f3eee6" if night else INK
     sub = "#c9c4dc" if night else shade(INK, 1.9)
+    L = st.get("luck") or {}
+    days = L.get("days") or []
+    today = L.get("today", st["today"].isoformat())
     b = []
-    iso = Iso(1046, 70 if st["lucky"] else 54, 18)
-    for x in range(4):
-        for y in range(3):
-            iso.add(x, y, 0, p["top"], p["side"][0], p["side"][1])
-    iso.add(1, 1, -1, *STONE)
-    iso.add(2, 1, -1, *STONE)
-    plants = ""
-    n = min(st["found"], 12)
-    for k in range(n):
-        gx, gy = .5 + (k % 4) * .9 + .2, .5 + (k // 4) * .8
-        px, py = iso.P(gx, gy, 1)
-        newest = st["lucky"] and k == n - 1
-        if newest:
-            plants += f'<circle cx="{px:.0f}" cy="{py - 20:.0f}" r="56" fill="url(#halo)" class="glow"/>'
-        plants += f'<g class="sway2">{standing_clover(px, py, 8 if newest else 6, p["leaf"], 4, 26 if newest else 16)}</g>'
-    if not n:
-        plants = iso.flat_clover(2, 1.5, 1, .6, shade(p["top"], .85), 3)
-    b.append(f'<g class="bob">{iso.render()}{plants}</g>')
-    if st["lucky"]:
-        cx, cy = iso.P(2, 1.5, 1)
-        b += [sparkle(cx - 60, cy - 40, 7, 0), sparkle(cx + 60, cy - 50, 6, -.7), sparkle(cx + 70, cy - 10, 4, -1.3)]
-        msg = "a four-leaf clover grew in the garden today"
-    else:
-        msg = "three leaves today. one day in ten, it's four"
-    t, _ = text(msg, 40, 70, 24, ink, kind="monoB" if st["lucky"] else "mono"); b.append(t)
-    t, _ = text(f"clover garden: {st['found']}   ·   {SEASONS[st['season']]['tag']}", 40, 108, 20, sub, kind="mono"); b.append(t)
-    return svg(W, H, "".join(b), "Clover garden — daily luck", card_sky(st))
+    n = len(days) or 30
+    k = min(32.0, 540 / n)
+    ox, oy = 1160 - n * k, 112
+    D, E = 2.2, .6
+    P = lambda x, y, z: (ox + x * k - y * .35 * k, oy + y * .55 * k - z * .95 * k)  # noqa: E731
+    d = .75 if night else 1
+    snow = st["season"] == "winter"
+    grass = (mix(p["top"], "#9fd38a", .6) if st["season"] == "autumn" else p["top"]) if not snow else "#f4f7fd"
+    strip = []
+    # the strip: earth front, grass top with a slight checker so every day is a tile
+    strip.append(f'<path d="{poly([P(0, D, 0), P(n, D, 0), P(n, D, -E), P(0, D, -E)])}" fill="{shade(p["side"][0], d)}"/>')
+    strip.append(f'<path d="{poly([P(n, 0, 0), P(n, D, 0), P(n, D, -E), P(n, 0, -E)])}" fill="{shade(p["side"][1], d)}"/>')
+    for i, (ds, luck) in enumerate(days):
+        future = ds > today
+        c = shade(grass, d * (1 if i % 2 else .95) * (.9 if future else 1))
+        strip.append(f'<path d="{poly([P(i, 0, 0), P(i + 1, 0, 0), P(i + 1, D, 0), P(i, D, 0)])}" fill="{c}"/>')
+    # rainbow behind the strip on a lucky day
+    lucky_today = st["lucky"]
+    if lucky_today:
+        ti = next((i for i, (ds, _) in enumerate(days) if ds == today), 0)
+        rx, ry = P(ti + .5, D / 2, 0)
+        arcs = "".join(f'<path d="M{rx - 70 - j * 7:.1f} {ry:.1f} A{70 + j * 7} {56 + j * 6} 0 0 1 {rx + 70 + j * 7:.1f} {ry:.1f}" stroke="{col}" stroke-width="6" fill="none" opacity=".45"/>'
+                       for j, col in enumerate(["#b9a6f0", "#8fc3f0", "#9fd38a", "#ffe08a", "#f7b27a", "#f08f8f"]))
+        b.append(arcs)
+    tufts = []
+    for i, (ds, luck) in enumerate(days):
+        future, is_today = ds > today, ds == today
+        x, y = i + .5, D / 2
+        cx, cy = P(x, y, 0)
+        delay = f'style="animation-delay:{-i * .25:.2f}s"'
+        if future:
+            tufts.append(f'<path d="M{cx:.1f} {cy:.1f} v-6 M{cx:.1f} {cy - 4:.1f} q-4 -2 -5 -5 M{cx:.1f} {cy - 5:.1f} q4 -2 5 -5" stroke="{shade(p["leaf"], d * .9)}" stroke-width="1.5" fill="none" stroke-linecap="round"/>')
+            continue
+        if snow and not luck:
+            tufts.append(f'<ellipse cx="{cx:.1f}" cy="{cy - 2:.1f}" rx="6" ry="3" fill="#ffffff"/>')
+            continue
+        if luck:
+            tufts.append(f'<circle cx="{cx:.1f}" cy="{cy - 16:.1f}" r="22" fill="url(#halo)" class="glow" {delay}/>')
+            tufts.append(f'<g class="sway2" {delay}>{standing_clover(cx, cy, 6.2 * k / 22, shade("#5fbf6a", d), 4, 22 * k / 22)}</g>')
+            tufts.append(sparkle(cx + 10, cy - 30, 3.5, -i * .3))
+        else:
+            tufts.append(f'<g class="sway2" {delay}>{standing_clover(cx, cy, 4.2 * k / 22, shade(p["leaf"], d), 3, (12 + (i * 7) % 6) * k / 22)}</g>')
+        if is_today:
+            fx, fy = P(x + .25, .4, 0)
+            tufts.append(f'<path d="M{fx:.1f} {fy:.1f} v-34" stroke="{ink}" stroke-width="2"/><path d="M{fx:.1f} {fy - 34:.1f} l16 5 l-16 5z" fill="#ffd884" stroke="{INK}" stroke-width="1.2"/>')
+    # a bee drifting over the meadow (a firefly at night)
+    bx0, by0 = P(2, 1, 3.2)
+    bx1, _ = P(n - 2, 1, 3.2)
+    path = f"M{bx0:.1f} {by0:.1f} C{bx0 + 120:.1f} {by0 - 40:.1f} {bx1 - 160:.1f} {by0 + 30:.1f} {bx1:.1f} {by0 - 10:.1f} C{bx1 - 120:.1f} {by0 - 50:.1f} {bx0 + 160:.1f} {by0 + 20:.1f} {bx0:.1f} {by0:.1f}"
+    bee = ('<circle r="7" fill="url(#halo)"/><circle r="2.2" fill="#f7f3a0"/>' if night else
+           '<g class="flap"><ellipse cx="-2" cy="-5" rx="4" ry="3" fill="#ffffff" opacity=".85"/><ellipse cx="3" cy="-5" rx="4" ry="3" fill="#ffffff" opacity=".85"/></g>'
+           '<ellipse rx="5" ry="3.6" fill="#ffd25a"/><path d="M-1 -3.4 v6.8 M2 -3.2 v6.4" stroke="#2b2540" stroke-width="1.4"/>')
+    tufts.append(f'<g>{bee}<animateMotion dur="14s" repeatCount="indefinite" path="{path}"/></g>')
+    # a ladybug on today's tile
+    b.append(f'<g class="bob">{"".join(strip)}{"".join(tufts)}</g>')
+    # date ticks
+    for i, (ds, _) in enumerate(days):
+        ti_ = next((j for j, (dd, _) in enumerate(days) if dd == today), -9)
+        if ds == today or (i % 7 == 0 and abs(i - ti_) > 2):
+            tx, ty = P(i + .5, D, -E)
+            lab = "today" if ds == today else dt.date.fromisoformat(ds).strftime("%b %-d").lower()
+            t, _ = text(lab, tx, ty + 24, 14, ink if ds == today else sub, "middle", "monoB" if ds == today else "mono"); b.append(t)
 
+    found, searched, nxt = st["found"], L.get("searched", 1), L.get("next_in", 0)
+    if lucky_today:
+        head = "four leaves today!"
+    elif st["season"] == "winter":
+        head = "the meadow sleeps under snow"
+    else:
+        head = "three leaves today"
+    t, _ = text(head, 40, 72, 24, ink, kind="monoB" if lucky_today else "mono"); b.append(t)
+    t, _ = text(f"{found} found in {searched} day{'s' if searched != 1 else ''} · one day in ten", 40, 106, 19, sub, kind="mono"); b.append(t)
+    hint = "the wind says: tomorrow" if nxt == 1 else (f"the wind says: in {nxt} days" if nxt <= 4 else "the wind says nothing yet")
+    t, _ = text(hint, 40, 138, 19, sub, kind="mono"); b.append(t)
+    # the garden of found four-leaves, as a little row of pots
+    gx = 40
+    for g in range(min(found, 12)):
+        px_, py_ = gx + 6 + g * 34, 190
+        b.append(f'<path d="M{px_ - 11} {py_ - 14} h22 l-3 16 h-16z" fill="#c9805a"/><rect x="{px_ - 12}" y="{py_ - 18}" width="24" height="5" rx="1" fill="#b46e4b"/>')
+        b.append(f'<g class="sway2" style="animation-delay:{-g * .4:.1f}s">{standing_clover(px_, py_ - 17, 4.6, p["leaf"], 4, 14)}</g>')
+    if found > 12:
+        t, _ = text(f"+{found - 12}", gx + 12 * 30 + 6, 182, 16, sub, kind="mono"); b.append(t)
+    if not found:
+        t, _ = text("(the garden is empty for now)", 40, 182, 16, sub, kind="mono"); b.append(t)
+    return svg(W, H, "".join(b), "Clover meadow — daily luck", card_sky(st))
 
 def divider():
     W, H = 1200, 36
@@ -1592,10 +1658,94 @@ def loot(day_iso):
         h -= w
 
 
+CAT_NAME = "piki"
+
+
+def cat(P, v, mood, night):
+    """piki, a ragdoll: cream coat, darker seal points (ears, mask, tail), white mitts, blue eyes. Faces +y."""
+    d = .82 if night else 1
+    cream, white, point, dark, pink = "#f1e6d6", "#fffaf2", "#9a8172", "#6e594d", "#f3a6b2"
+    out = []
+    B = lambda x, y, z, dx, dy, dz, c: out.append(ibox(P, x, y, z, dx, dy, dz, *_C(c, d)))  # noqa: E731
+    face = lambda y, x0, z0, x1, z1: poly([P(x0, y, z0), P(x1, y, z0), P(x1, y, z1), P(x0, y, z1)])  # noqa: E731
+    if mood == "sleep":       # curled up, tail wrapped round the front
+        B(0, 0, 0, 5, 4.4, 2.6, cream)
+        B(.4, .4, 2.6, 4.2, 3.4, .5, shade(cream, .97))
+        B(.2, 3.4, .1, 3.2, 2.6, 2.7, cream)                  # head resting
+        B(.9, 5.6, .5, 1.8, .5, 1.3, point)                   # mask
+        out.append(f'<path d="{face(6.01, 1.1, 1.6, 1.8, 1.8)}" fill="{INK}"/><path d="{face(6.01, 2.0, 1.6, 2.7, 1.8)}" fill="{INK}"/>')
+        B(.3, 3.8, 2.8, .9, 1, .9, dark); B(2.5, 3.8, 2.8, .9, 1, .9, dark)   # ears
+        B(3.4, 3.6, 0, 3.2, 1.4, 1.1, dark)                  # tail round the front
+        B(5.2, .6, 0, 1.4, 4.4, 1.1, dark)
+        zx, zy = P(2, 5, 4.6)
+        for k in range(2):
+            out.append(f'<path d="M{zx:.1f} {zy:.1f} h{v:.1f} l{-v:.1f} {v * 1.2:.1f} h{v:.1f}" stroke="{"#e8e4f4" if night else INK}" stroke-width="{v * .3:.1f}" '
+                       f'fill="none" class="zz" style="animation-delay:{k * 1.5 + .7:.1f}s"/>')
+        title = "asleep next to keko"
+    else:                     # sitting up, tail swishing
+        tx, ty = P(4, 1, 1)
+        tail = ibox(P, 4, -.6, 0, 1.3, 1.3, 1.2, *_C(dark, d)) + ibox(P, 4.3, -1.6, .8, 1.2, 1.2, 2.6, *_C(dark, d))
+        out.append(f'<g class="swish" style="transform-origin:{tx:.1f}px {ty:.1f}px">{tail}</g>')
+        B(0, 0, 0, 4, 4, 4.4, cream)                          # body
+        B(.4, 3.5, .6, 3.2, 1.1, 3.4, white)                  # fluffy chest
+        for x in (.6, 2.4):
+            B(x, 4, 0, 1, 1.1, .9, white)                     # white mitts
+        B(.2, 2.6, 4.2, 3.6, 3.2, 3.4, cream)                 # head
+        B(.1, 5.2, 4.3, 3.8, .5, 1.1, white)                  # cheek ruff
+        B(.9, 5.8, 4.8, 2.2, .3, 2.2, point)                  # seal-point mask
+        B(.3, 3.0, 7.6, 1.1, 1.1, 1.3, dark); B(2.6, 3.0, 7.6, 1.1, 1.1, 1.3, dark)   # ears
+        out.append(f'<path d="{face(6.11, .6, 7.7, 1.2, 8.4)}" fill="{pink}"/><path d="{face(6.11, 2.8, 7.7, 3.4, 8.4)}" fill="{pink}"/>'
+                   if False else "")
+        out.append('<g class="blink">' + "".join(
+            f'<path d="{face(6.12, ex, 6.0, ex + .8, 6.7)}" fill="#5aa9e6"/><path d="{face(6.13, ex + .25, 6.0, ex + .55, 6.7)}" fill="{INK}"/>'
+            for ex in (1.0, 2.2)) + '</g>')
+        out.append(f'<path d="{face(6.12, 1.75, 5.25, 2.25, 5.6)}" fill="{pink}"/>')
+        title = "watching over the chest" if mood == "waiting" else "happy, sitting by the chest"
+    return f'<g><title>{CAT_NAME} is {title}</title>{"".join(out)}</g>'
+
+
+def cottage(P, v, night, d):
+    """A little cottage: cream walls, red stepped roof, round-top door, a lit window, chimney with smoke."""
+    out = []
+    wall, roof, wood = "#efe2c8", "#b8573f", "#8a5a3a"
+    out.append(ibox(P, 0, 0, 0, 11, 8, 6.4, *_C(wall, d)))
+    for k, (inset, dz) in enumerate([(0, 1.1), (1.2, 1.1), (2.4, 1.1), (3.6, 1)]):
+        out.append(ibox(P, -.4 + inset, -.4, 6.4 + sum(h for _, h in [(0, 1.1), (1.2, 1.1), (2.4, 1.1)][:k]), 11.8 - 2 * inset, 8.8, dz, *_C(shade(roof, 1 - .04 * k), d)))
+    # chimney + smoke
+    out.append(ibox(P, 8.2, 1.2, 8.6, 1.4, 1.4, 3, *_C("#8c7f7a", d)))
+    sx, sy = P(8.9, 1.9, 11.8)
+    for k in range(3):
+        out.append(f'<circle cx="{sx:.1f}" cy="{sy:.1f}" r="{v * .9:.1f}" fill="{"#efeaf4" if not night else "#8d88a6"}" class="puff2" style="animation-delay:{k * 1.1:.1f}s"/>')
+    fy = lambda y, x0, z0, x1, z1: poly([P(x0, y, z0), P(x1, y, z0), P(x1, y, z1), P(x0, y, z1)])  # noqa: E731
+    fx = lambda x, y0, z0, y1, z1: poly([P(x, y0, z0), P(x, y1, z0), P(x, y1, z1), P(x, y0, z1)])  # noqa: E731
+    # door with a round top on the front, steps
+    out.append(f'<path d="{fy(8.01, 3.6, 0, 6.2, 3.8)}" fill="{wood}"/>')
+    a, b_ = P(3.6, 8.01, 3.8), P(6.2, 8.01, 3.8)
+    out.append(f'<path d="M{a[0]:.1f} {a[1]:.1f} Q{(a[0] + b_[0]) / 2:.1f} {(a[1] + b_[1]) / 2 - 2.6 * v:.1f} {b_[0]:.1f} {b_[1]:.1f}Z" fill="{wood}"/>')
+    kx, ky = P(5.7, 8.02, 1.9)
+    out.append(f'<circle cx="{kx:.1f}" cy="{ky:.1f}" r="1.6" fill="#ffd25a"/>')
+    out.append(ibox(P, 3.2, 8, 0, 3.4, 1.2, .4, *_C("#b9ad9e", d)))
+    # windows: front and side, warm at night
+    lit = "#ffd98a" if night else "#cfe6f0"
+    for (x0, x1) in [(7.6, 9.8), (.9, 2.9)]:
+        out.append(f'<path d="{fy(8.01, x0, 2.6, x1, 4.6)}" fill="{lit}" stroke="{wood}" stroke-width="2"/>')
+    out.append(f'<path d="{fx(11.01, 2.4, 2.6, 5.4, 4.6)}" fill="{lit}" stroke="{wood}" stroke-width="2"/>')
+    if night:
+        for (x, y, z) in [(8.7, 8.3, 3.6), (1.9, 8.3, 3.6), (11.3, 3.9, 3.6)]:
+            gx, gy = P(x, y, z)
+            out.append(f'<circle cx="{gx:.1f}" cy="{gy:.1f}" r="{v * 3:.1f}" fill="url(#warm)" class="glow"/>')
+    # flower box under the side window
+    out.append(ibox(P, 11, 2.2, 2, .7, 3.4, .5, *_C(wood, d)))
+    for k in range(4):
+        fx_, fy_ = P(11.4, 2.6 + k * .85, 2.5)
+        out.append(f'<circle cx="{fx_:.1f}" cy="{fy_ - 2:.1f}" r="2.2" fill="{["#f5a9bf", "#ffd884", "#f6f2ff", "#e98d8d"][k]}"/>')
+    return "".join(out)
+
+
 def chest_card(st):
-    """Full-width card: one chest per day; a commit opens it. The dog guards it.
+    """Full-width card: keko and piki's yard. One chest per day; a commit opens it.
     The collection is rebuilt from the contribution calendar, so nothing has to be stored."""
-    W, H = 1200, 360
+    W, H = 1200, 420
     night = st["phase"] == "night"
     ink = "#f3eee6" if night else INK
     sub = "#c9c4dc" if night else shade(INK, 1.9)
@@ -1612,32 +1762,64 @@ def chest_card(st):
     mood = dog_mood(st)
     b = []
 
-    # --- little floating meadow with the dog and the chest
-    v = 8.4
-    ox, oy = 250, 132
+    v = 7.6
+    ox, oy = 300, 150
     P = lambda x, y, z: (ox + (x - y) * v, oy + (x + y) * v / 2 - z * v)  # noqa: E731
-    d = .75 if night else 1
+    d = .78 if night else 1
     grass = mix(p["top"], "#9fd38a", .6) if st["season"] == "autumn" else p["top"]
-    scene = [ibox(P, -1, -4, -3.2, 24, 20, 1.6, shade(p["side"][0], .9 * d), shade(p["side"][0], .78 * d), shade(p["side"][1], .74 * d)),
-             ibox(P, -3, -6, -1.6, 28, 24, 1.6, shade(grass, d), shade(p["side"][0], d), shade(p["side"][1], d))]
+    snow = st["season"] == "winter"
+    scene = [ibox(P, -2, -8, -4.8, 36, 30, 1.8, *_C(shade(p["side"][0], .9), d)),
+             ibox(P, 2, -4, -6.6, 28, 22, 1.8, *_C(shade(p["side"][1], .9), d)),
+             ibox(P, 9, 3, -8.2, 14, 10, 1.6, *_C(shade(p["side"][1], .8), d)),
+             ibox(P, -4, -10, -3, 40, 34, 3, *_C(grass if not snow else "#f4f7fd", d))]
+    # hanging roots under the island
+    for (x, y, ln) in [(4, 24, 26), (14, 24, 34), (26, 24, 20), (36, 6, 30), (36, 16, 22)]:
+        a = P(x, y, -3)
+        scene.append(f'<path d="M{a[0]:.1f} {a[1]:.1f} q5 {ln / 2:.0f} -1 {ln:.0f}" stroke="{shade(p["leaf"], .8 * d)}" stroke-width="1.8" fill="none" class="sway2"/>')
+    # stone path from the door, grass tufts, flowers, a little fence
+    for k in range(5):
+        scene.append(ibox(P, 3.8 + (k % 2) * .8, 1.6 + k * 2.4, 0, 2.2, 1.6, .15, *_C("#c8bdb0", d)))
     rnd = random.Random(8)
-    for _ in range(14):
-        tx, ty = P(rnd.uniform(-2, 24), rnd.uniform(-5, 17), 0)
-        if True:
+    for _ in range(26):
+        x, y = rnd.uniform(-3, 35), rnd.uniform(-9, 23)
+        if -1 < x < 13 and -8 < y < 1:
+            continue
+        tx, ty = P(x, y, 0)
+        if rnd.random() < .3:
+            scene.append(f'<path d="M{tx:.1f} {ty:.1f} v-6" stroke="{shade(p["leaf"], .8 * d)}" stroke-width="1.3"/>'
+                         f'<circle cx="{tx:.1f}" cy="{ty - 7:.1f}" r="2.2" fill="{rnd.choice(["#f5a9bf", "#ffd884", "#ffffff", "#c9a7f0"])}"/>')
+        else:
             scene.append(f'<path d="M{tx - 4:.1f} {ty:.1f} q1 -6 2 -9 M{tx:.1f} {ty:.1f} v-11 M{tx + 4:.1f} {ty:.1f} q-1 -6 -2 -9" '
                          f'stroke="{shade(p["leaf"], .85 * d)}" stroke-width="1.6" fill="none" stroke-linecap="round"/>')
+    # a little pond with lily pads and a ripple
+    water = shade(p["water"], .75 if night else 1)
+    scene.append(f'<path d="{poly([P(24, 7, .02), P(32, 7, .02), P(33, 11, .02), P(32, 15, .02), P(25, 15, .02), P(23.5, 11, .02)])}" fill="{shade(water, .8)}"/>')
+    scene.append(f'<path d="{poly([P(24.6, 7.6, .03), P(31.4, 7.6, .03), P(32.3, 11, .03), P(31.4, 14.4, .03), P(25.6, 14.4, .03), P(24.2, 11, .03)])}" fill="{water}"/>')
+    for (x, y) in [(24, 7), (27, 6.6), (30.5, 6.7), (33, 9.5), (33.2, 13), (31, 15.2), (27.5, 15.3), (24.6, 14.6), (23.3, 10.8)]:
+        scene.append(ibox(P, x - .5, y - .5, 0, 1.1, 1, .45, *_C("#b9b2a8", d)))
+    for (x, y, r) in [(26.5, 10, 5), (29.6, 12.6, 4)]:
+        lx, ly = P(x, y, .05)
+        scene.append(f'<ellipse cx="{lx:.1f}" cy="{ly:.1f}" rx="{r + 2}" ry="{r * .55:.1f}" fill="#5fa86a"/><circle cx="{lx + 2:.1f}" cy="{ly - 2:.1f}" r="2.2" fill="#f5c1d0"/>')
+    rx_, ry_ = P(29, 9.5, .05)
+    scene.append(f'<ellipse cx="{rx_:.1f}" cy="{ry_:.1f}" rx="10" ry="4" fill="none" stroke="#ffffff" stroke-opacity=".6" stroke-width="1.4" class="ripple"/>')
+    for k in range(7):
+        scene.append(ibox(P, 36 - .5, -9 + k * 2.6, 0, .5, .5, 2.4, *_C("#b98a5e", d)))
+    scene.append(ibox(P, 36 - .45, -9, 1.6, .4, 16, .4, *_C("#c99a6a", d)))
+    # the cottage at the back
+    PC = lambda x, y, z: P(x - 1, y - 9, z)  # noqa: E731
+    scene.append(cottage(PC, v, night, d))
+    # the chest, right side
     wood, gold = "#a8693d", "#e3b04b"
     chest = []
-    cx0, cy0 = 12, -3
-    gt, gpy, gpx = _C(gold, d)
+    cx0, cy0 = 22, -6
+    gt, gpy, _ = _C(gold, d)
 
-    def bands(y0, dy, z0, dz):   # gold straps: only the faces that can be seen
+    def bands(y0, dy, z0, dz):
         for bx in (cx0 + .7, cx0 + 8.4):
             chest.append(f'<path d="{poly([P(bx, y0, z0 + dz), P(bx + .9, y0, z0 + dz), P(bx + .9, y0 + dy, z0 + dz), P(bx, y0 + dy, z0 + dz)])}" fill="{gt}"/>'
                          f'<path d="{poly([P(bx, y0 + dy, z0), P(bx + .9, y0 + dy, z0), P(bx + .9, y0 + dy, z0 + dz), P(bx, y0 + dy, z0 + dz)])}" fill="{gpy}"/>')
-        chest.append(f'<path d="{poly([P(cx0 + 10, y0, z0), P(cx0 + 10, y0 + dy, z0), P(cx0 + 10, y0 + dy, z0 + dz), P(cx0 + 10, y0, z0 + dz)])}" fill="none"/>')
     if opened:
-        chest.append(ibox(P, cx0, cy0 - 1.4, 6, 10, 1.4, 6.4, *_C(shade(wood, 1.1), d)))           # lid, thrown back
+        chest.append(ibox(P, cx0, cy0 - 1.4, 6, 10, 1.4, 6.4, *_C(shade(wood, 1.1), d)))
         bands(cy0 - 1.45, 1.5, 6, 6.5)
     chest.append(ibox(P, cx0, cy0, 0, 10, 6, 6, *_C(wood, d)))
     if opened:
@@ -1646,47 +1828,85 @@ def chest_card(st):
     else:
         chest.append(ibox(P, cx0, cy0, 6, 10, 6, 2.6, *_C(shade(wood, 1.12), d)))
         bands(cy0 - .05, 6.1, 0, 8.65)
-    chest.append(ibox(P, cx0 + 4.3, cy0 + 6, 4.2, 1.4, .5, 2.2, *_C(gold, d)))                # lock
+    chest.append(ibox(P, cx0 + 4.3, cy0 + 6, 4.2, 1.4, .5, 2.2, *_C(gold, d)))
     kx, ky = P(cx0 + 5, cy0 + 6.5, 5)
     chest.append(f'<rect x="{kx - 1.5:.1f}" y="{ky - 2:.1f}" width="3" height="5" fill="#5a3a22"/>')
-    scene.append(dog(P, v, mood, night))
     scene.append("".join(chest))
-    scene.append(dog_friends(P, v, mood, night, opened, cx0, cy0))
-    sx, sy = P(-1.2, 16.5, 0)
+    # piki: on the closed chest while waiting, by the chest when happy, curled up next to keko at night
+    if mood == "waiting" and not opened:
+        PK = lambda x, y, z: P(x + cx0 + 3, y + cy0 + .8, z + 8.6)  # noqa: E731
+        piki_first = False
+    elif mood == "sleep":
+        PK = lambda x, y, z: P(x + 11, y + 9, z)  # noqa: E731
+        piki_first = False
+    else:
+        PK = lambda x, y, z: P(x + 20, y + 4, z)  # noqa: E731
+        piki_first = False
+    PD = lambda x, y, z: P(x + 4, y + 6, z)  # noqa: E731
+    if piki_first:
+        scene.append(cat(PK, v, mood, night))
+    scene.append(dog(PD, v, mood, night))
+    scene.append(cat(PK, v, mood, night))
+    # a tree at the front corner
+    crown = p["crown"] if not snow else "#f4f7fd"
+    scene.append(ibox(P, 33.4, 19.4, 0, 1.2, 1.2, 4.6, *_C(shade(p["side"][1], 1.05), d)))
+    scene.append(ibox(P, 31.6, 17.6, 4.2, 4.8, 4.8, 3.4, *_C(crown, d)))
+    scene.append(ibox(P, 32.6, 18.6, 7.6, 2.8, 2.8, 1.8, *_C(shade(crown, 1.06), d)))
+    # ball, bird, butterfly
+    bx, by = P(14, 21, 0)
+    ball = (f'<circle cx="{bx:.1f}" cy="{by - 8:.1f}" r="8" fill="#e0574c"/><path d="M{bx - 8:.1f} {by - 8:.1f} a8 8 0 0 0 16 0z" fill="#f7f1e3"/>'
+            f'<path d="M{bx - 8:.1f} {by - 8:.1f} h16" stroke="{INK}" stroke-width="1.3"/>')
+    scene.append(f'<ellipse cx="{bx:.1f}" cy="{by:.1f}" rx="7" ry="2.6" fill="{INK}" opacity=".15"/>' + (f'<g class="bounce">{ball}</g>' if mood == "happy" else ball))
+    if not night:
+        wx, wy = P(cx0 + 8.6, cy0 - .7, 13.2) if opened else (P(cx0 + 8.4, cy0 + 3, 8.6) if mood != "waiting" else P(cx0 + 1.2, cy0 + 3, 8.6))
+        bird = (f'<ellipse cx="{wx:.1f}" cy="{wy - 6:.1f}" rx="7" ry="5.5" fill="#6a8fd6"/><circle cx="{wx - 5:.1f}" cy="{wy - 11:.1f}" r="4.2" fill="#6a8fd6"/>'
+                f'<path d="M{wx - 9:.1f} {wy - 11:.1f} l-4 1.5 l4 1.5z" fill="#f0a63c"/><circle cx="{wx - 6:.1f}" cy="{wy - 12:.1f}" r="1.1" fill="{INK}"/>'
+                f'<ellipse cx="{wx - 1:.1f}" cy="{wy - 4:.1f}" rx="4" ry="2.6" fill="#f3eee6"/><path d="M{wx + 6:.1f} {wy - 7:.1f} l6 -3 l-1 5z" fill="#4f6fb4"/>')
+        scene.append(f'<g class="hop">{bird}</g>')
+    hx, hy = P(7, 18, 14.5)
+    path = f"M{hx + 34:.1f} {hy:.1f} a34 13 0 1 1 -68 0 a34 13 0 1 1 68 0"
+    bug = ('<circle r="6" fill="url(#halo)" opacity=".9"/><circle r="2" fill="#f7f3a0"/>' if night else
+           '<g class="flap"><path d="M0 0 C-7 -9 -10 -2 -2 1Z M0 0 C7 -9 10 -2 2 1Z" fill="#f5a9bf"/><path d="M0 0 C-5 6 -7 2 -1 1Z M0 0 C5 6 7 2 1 1Z" fill="#e98d8d"/></g>'
+           '<path d="M0 -3 v5" stroke="#2b2540" stroke-width="1.2"/>')
+    scene.append(f'<g>{bug}<animateMotion dur="9s" repeatCount="indefinite" path="{path}"/></g>')
+    # the name sign by the path
+    sx, sy = P(19, 24, 0)
     plank = "#c99a6a" if not night else "#8f6e50"
-    t, nw = text(DOG_NAME, sx, sy - 30, 17, INK, "middle", "monoB")
+    t, nw = text(f"{DOG_NAME} & {CAT_NAME}", sx, sy - 30, 15, INK, "middle", "monoB")
     scene.append(f'<rect x="{sx - 2.5:.1f}" y="{sy - 44:.1f}" width="5" height="44" fill="{shade(plank, .7)}"/>'
-                 f'<rect x="{sx - nw / 2 - 10:.1f}" y="{sy - 50:.1f}" width="{nw + 20:.1f}" height="28" rx="4" fill="{plank}" stroke="{shade(plank, .65)}" stroke-width="2"/>{t}')
+                 f'<rect x="{sx - nw / 2 - 10:.1f}" y="{sy - 49:.1f}" width="{nw + 20:.1f}" height="26" rx="4" fill="{plank}" stroke="{shade(plank, .65)}" stroke-width="2"/>{t}')
     if opened:
         ix, iy = P(cx0 + 5, cy0 + 3, 15)
-        scene.append(f'<circle cx="{ix:.1f}" cy="{iy:.1f}" r="58" fill="url(#halo)" class="glow"/>'
-                     f'<g class="hover">{sprite(item, ix - 25, iy - 25, 5)}</g>'
-                     + sparkle(ix - 36, iy - 18, 6, 0) + sparkle(ix + 34, iy - 4, 5, .8) + sparkle(ix + 18, iy - 38, 4, 1.5))
+        scene.append(f'<circle cx="{ix:.1f}" cy="{iy:.1f}" r="52" fill="url(#halo)" class="glow"/>'
+                     f'<g class="hover">{sprite(item, ix - 22, iy - 22, 4.4)}</g>'
+                     + sparkle(ix - 32, iy - 16, 6, 0) + sparkle(ix + 30, iy - 4, 5, .8) + sparkle(ix + 16, iy - 34, 4, 1.5))
     else:
-        qx, qy = P(cx0 + 5, cy0 + 3, 14)
-        t, _ = text("?", qx, qy + 12, 40, sub, "middle", "monoB")
+        qx, qy = P(cx0 + 5, cy0 + 3, 15 if mood != "waiting" else 18)
+        t, _ = text("?", qx, qy + 12, 38, sub, "middle", "monoB")
         scene.append(f'<g class="hover">{t}</g>')
     b.append(f'<g class="bob">{"".join(scene)}</g>')
 
-    # --- text + collection
-    t, _ = text("daily chest", 600, 58, 34, ink, kind="title"); b.append(t)
+    # --- text + collection, right side
+    X0 = 700
+    t, _ = text("daily chest", X0, 58, 34, ink, kind="title"); b.append(t)
     if opened:
-        t, w = text(f"today: {item}", 600, 92, 20, ink, kind="monoB"); b.append(t)
-        t, _ = text(f"· {rar}", 600 + w + 10, 92, 20, RARITY[rar], kind="mono"); b.append(t)
+        t, w = text(f"today: {item}", X0, 92, 20, ink, kind="monoB"); b.append(t)
+        t, _ = text(f"· {rar}", X0 + w + 10, 92, 20, RARITY[rar], kind="mono"); b.append(t)
     else:
-        t, _ = text("closed · a commit today opens it", 600, 92, 20, sub, kind="mono"); b.append(t)
-    found = sum(got.values())
-    t, _ = text(f"{found} found", W - 40, 58, 20, sub, "end", "mono"); b.append(t)
+        t, _ = text("closed · a commit today opens it", X0, 92, 20, sub, kind="mono"); b.append(t)
+    t, _ = text(f"{sum(got.values())} found", W - 40, 58, 20, sub, "end", "mono"); b.append(t)
     for i, (name, rar_, _) in enumerate(LOOT):
         col, row = i % 5, i // 5
-        x, y = 600 + col * 112, 122 + row * 112
+        x, y = X0 + col * 93, 124 + row * 100
         n = got.get(name, 0)
-        b.append(f'<rect x="{x}" y="{y}" width="100" height="100" rx="12" fill="{"#ffffff" if not night else "#2c2f5a"}" fill-opacity="{.45 if not night else .55}"/>')
-        b.append(f'<rect x="{x + 38}" y="{y + 90}" width="24" height="4" rx="2" fill="{RARITY[rar_]}"/>')
-        b.append(sprite(name, x + 30, y + 14, 4, silhouette=not n, night=night))
-        t, _ = text(f"×{n}" if n else "???", x + 50, y + 80, 18, ink if n else sub, "middle", "monoB" if n else "mono"); b.append(t)
-    return svg(W, H, "".join(b), "daily chest with a dog guarding it", card_sky(st))
-
+        b.append(f'<rect x="{x}" y="{y}" width="84" height="90" rx="12" fill="{"#ffffff" if not night else "#2c2f5a"}" fill-opacity="{.45 if not night else .55}"/>')
+        b.append(f'<rect x="{x + 30}" y="{y + 81}" width="24" height="4" rx="2" fill="{RARITY[rar_]}"/>')
+        b.append(sprite(name, x + 24, y + 12, 3.6, silhouette=not n, night=night))
+        t, _ = text(f"×{n}" if n else "???", x + 42, y + 70, 17, ink if n else sub, "middle", "monoB" if n else "mono"); b.append(t)
+    who = {"happy": f"{DOG_NAME} is happy · {CAT_NAME} approves", "waiting": f"{DOG_NAME} waits · {CAT_NAME} guards the lid",
+           "sleep": f"{DOG_NAME} and {CAT_NAME} are asleep"}[mood]
+    t, _ = text(who, X0, 362, 18, sub, kind="mono"); b.append(t)
+    return svg(W, H, "".join(b), "keko and piki's yard with the daily chest", card_sky(st))
 
 # ---------------------------------------------------------------- languages (GitHub, private repos included)
 def _lang_rows(st, k=6):

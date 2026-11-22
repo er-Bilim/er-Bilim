@@ -331,6 +331,11 @@ def main():
     st["calendar"] = cache.get("calendar", {})
     st["commits"] = cache.get("commits", [])
     st["langs_gh"] = cache.get("langs_gh", {})
+    start = max(LUCK_START, today - dt.timedelta(days=23))
+    nxt = next(k for k in range(1, 400) if lucky(today + dt.timedelta(days=k)))
+    span = (today - start).days + 7
+    st["luck"] = {"days": [((start + dt.timedelta(days=k)).isoformat(), lucky(start + dt.timedelta(days=k))) for k in range(span)],
+                  "today": today.isoformat(), "next_in": nxt, "searched": (today - LUCK_START).days + 1}
     out = {
         "header.svg": world.header(st),
         "stats.svg": world.stats_card(st),
