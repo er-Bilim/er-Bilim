@@ -33,7 +33,7 @@
       }
     ],
     "total": "54 hrs 35 mins",
-    "all_time": "1,886 hrs 23 mins"
+    "all_time": "1,886 hrs 34 mins"
   },
   "weekly": 19,
   "repo": "devio",
@@ -1583,16 +1583,16 @@
         "repos": 62
       },
       {
+        "name": "Python",
+        "bytes": 452248,
+        "color": "#3572A5",
+        "repos": 14
+      },
+      {
         "name": "JavaScript",
         "bytes": 438897,
         "color": "#f1e05a",
         "repos": 62
-      },
-      {
-        "name": "Python",
-        "bytes": 435889,
-        "color": "#3572A5",
-        "repos": 14
       },
       {
         "name": "CSS",
