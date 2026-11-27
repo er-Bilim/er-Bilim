@@ -1,6 +1,6 @@
 {
   "stats": {
-    "commits": 2170,
+    "commits": 2179,
     "prs": 115,
     "issues": 109,
     "reviews": 51,
@@ -33,17 +33,17 @@
       }
     ],
     "total": "54 hrs 35 mins",
-    "all_time": "1,896 hrs 7 mins"
+    "all_time": "1,899 hrs 16 mins"
   },
-  "weekly": 22,
+  "weekly": 31,
   "repo": "devio",
   "repos": [
     {
       "name": "devio",
       "lang": "TypeScript",
-      "size": 754,
+      "size": 3344,
       "stars": 1,
-      "commits": 259
+      "commits": 262
     },
     {
       "name": "semo",
@@ -1547,41 +1547,45 @@
       ],
       [
         "2026-11-27",
-        0
+        2
+      ],
+      [
+        "2026-11-28",
+        7
       ]
     ],
-    "total": 2269,
-    "streak": 8,
+    "total": 2278,
+    "streak": 10,
     "longest": 79
   },
   "commits": [
     {
       "repo": "devio",
       "lang": "TypeScript",
+      "msg": "docs: add logo and screenshots for README",
+      "date": "2026-11-27T20:23:20Z",
+      "oid": "27e1ee5fb0ed1a4df7b8f0a625e0c5e813fa2576"
+    },
+    {
+      "repo": "devio",
+      "lang": "TypeScript",
+      "msg": "docs: add docs for README",
+      "date": "2026-11-27T20:17:45Z",
+      "oid": "4e8446ba2c7ec7b0546143be2787daf5feae2961"
+    },
+    {
+      "repo": "devio",
+      "lang": "TypeScript",
+      "msg": "update README",
+      "date": "2026-11-27T20:14:40Z",
+      "oid": "809317c496433768fa163d45534cfbe7e4e476bc"
+    },
+    {
+      "repo": "devio",
+      "lang": "TypeScript",
       "msg": "update README",
       "date": "2026-11-10T19:10:53Z",
       "oid": "a4b3ea9f32d6f7ba4cc10d67664054548b3af1f6"
-    },
-    {
-      "repo": "semo",
-      "lang": null,
-      "msg": "Create LICENSE",
-      "date": "2026-11-10T19:05:13Z",
-      "oid": "1d7750c6831dffd19ce7181d69aa3613c80ec1f0"
-    },
-    {
-      "repo": "semo",
-      "lang": null,
-      "msg": "update README",
-      "date": "2026-11-10T19:03:53Z",
-      "oid": "e757c074251f3dd73ef55f00fd8a1fb273f93aa3"
-    },
-    {
-      "repo": "semo",
-      "lang": null,
-      "msg": "rename README",
-      "date": "2026-11-10T19:01:26Z",
-      "oid": "a2b74436b08241e2d12cb56d1b022e8f1e0ab14d"
     }
   ],
   "langs_gh": {
@@ -1594,13 +1598,13 @@
       },
       {
         "name": "HTML",
-        "bytes": 838949,
+        "bytes": 1262031,
         "color": "#e34c26",
         "repos": 62
       },
       {
         "name": "Python",
-        "bytes": 459906,
+        "bytes": 461647,
         "color": "#3572A5",
         "repos": 14
       },
@@ -1612,9 +1616,9 @@
       },
       {
         "name": "CSS",
-        "bytes": 293717,
+        "bytes": 300068,
         "color": "#663399",
-        "repos": 53
+        "repos": 54
       },
       {
         "name": "SCSS",
@@ -1624,7 +1628,7 @@
       },
       {
         "name": "Vue",
-        "bytes": 16153,
+        "bytes": 12022,
         "color": "#41b883",
         "repos": 1
       },
